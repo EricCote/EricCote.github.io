@@ -186,6 +186,9 @@ if (Get-ServerName -neq '')
       TO 'C:\AW\AdventureWorks_data.mdf', 
       MOVE 'AdventureWorks2014_Log' 
       TO 'C:\AW\AdventureWorks_log.ldf';
+    GO
+    
+    ALTER AUTHORIZATION ON DATABASE::AdventureWorks2014 TO sa;
     "
 
     run-sql $cmd
@@ -213,6 +216,9 @@ if (Get-ServerName -neq '')
       TO 'C:\AW\AdventureWorksDW_data.mdf', 
       MOVE 'AdventureWorksDW2014_Log' 
       TO 'C:\AW\AdventureWorksDW_log.ldf';
+    GO
+    
+    ALTER AUTHORIZATION ON DATABASE::AdventureWorksDW2014 TO sa;
     "
 
     run-sql $cmd
@@ -230,6 +236,8 @@ if (Get-ServerName -neq '')
     CREATE DATABASE AdventureWorksLT2012 ON 
     ( FILENAME = N'C:\aw\AdventureWorksLT2012_Data.mdf' )
      FOR ATTACH_REBUILD_LOG  ;
+    GO
+    ALTER AUTHORIZATION ON DATABASE::AdventureWorksLT2012 TO sa;
     "
 
     run-sql $cmd
@@ -266,6 +274,8 @@ if (Get-ServerName -neq '')
     "  + $part + "
       MOVE 'WWI_Log' 
       TO 'C:\AW\WideWorldImporters.ldf';
+    GO
+    ALTER AUTHORIZATION ON DATABASE::WideWorldImporters TO sa;
     "
 
 
@@ -300,6 +310,8 @@ if (Get-ServerName -neq '')
     "  + $part + "
       MOVE 'WWI_Log' 
       TO 'C:\AW\WideWorldImportersDW.ldf';
+    GO
+    ALTER AUTHORIZATION ON DATABASE::WideWorldImportersDW TO sa;
     "
 
 
