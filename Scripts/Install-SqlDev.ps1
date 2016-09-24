@@ -15,6 +15,44 @@ function Download-File
 }
 
 
+function Uninstall-Program
+{
+    Param([parameter(Position=1)]
+        $Name,
+        [switch] $List
+    )
+
+    $programs = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | `
+    Select-Object DisplayName, UninstallString | `
+    ? DisplayName -like $name ;
+     
+
+    if ($programs -eq $null) {
+        $programs = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | `
+        Select-Object DisplayName, UninstallString | `
+        ? DisplayName -like $name; 
+    }
+
+    if ($programs -eq $null) {
+        return "No programs found with the name: " + $name;
+    }
+
+    if ($list) {
+        return $programs;
+    }
+    else {
+     
+        $programs | `
+        % -Process {  $unstr=$_.UninstallString.Replace("\Package Cache\","\Package_Cache\" ).Replace("  "," ") ;
+                $items = ($unstr.split(" ",2));
+                $items[0]= $items[0].Replace("\Package_Cache\","\Package Cache\" ).Replace("`"", "") ;
+                $items[1]= $items[1].Replace("/I","/x"); 
+                & ($items[0]) $items[1] /passive| Out-Null;
+        }
+
+    }
+ }
+
 $sourceSqlDev = "https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLServer2016-x64-ENU-Dev.iso";
 $SqlDev= ($dl + "SQLServer2016-x64-ENU-Dev.iso")
 
@@ -67,16 +105,7 @@ if (-Not (Test-Path $ssdt)) {
    Download-File $sourceSsdt $ssdt
 }
 
-& ($ssdt) installall=1 /passive | Out-Null
-
-
-
-
-
-
-
-
-
+& ($ssdt) INSTALLALL=1 /passive /promptrestart | Out-Null
 
 
 
@@ -96,44 +125,28 @@ $ssdt= ($dl + "SSDTSetup.exe")
 
 
 
-(Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*) | `
- Select-Object DisplayName, UninstallString | `
- ? DisplayName -like "*sql server*" | `
- % -Process { $items = ($_.UninstallString.split(" ",2)); 
-                        $items[1]= $items[1].Replace("/I","/x")  ;   
-                        & ($items[0]) $items[1] /passive | Out-Null; }
+uninstall-program "*Data tools for*" 
 
- 
-(Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*) | `
- Select-Object DisplayName, UninstallString | `
- Where-Object DisplayName -like "*sql server*" | `
- % -Process { $items = ($_.UninstallString.split(" ",2)); 
-                        $items[1]= $items[1].Replace("/I","/x")  ;   
-                        & ($items[0]) $items[1] /passive | Out-Null; }
+uninstall-program "*Data tools*" 
+uninstall-program "*ssdt*"
+
+uninstall-program "Microsoft SQL Server Management Studio*" -list
 
 
- 
- 
-(Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*) | `
- Select-Object DisplayName, UninstallString | `
- ? DisplayName -like "Microsoft Visual C++ 2010*Redistributable*" | `
- % -Process {  $unstr=$_.UninstallString.Replace("\Package Cache\","\Package_Cache\" ).Replace("  "," ") ;
-               $items = ($unstr.split(" ",2));
-                        $items[0]= $items[0].Replace("\Package_Cache\","\Package Cache\" ).Replace("`"", "") ;
-                        $items[1]= $items[1].Replace("/I","/x"); 
-                        & ($items[0]) $items[1] /passive| Out-Null; 
-                        }
- 
- (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*) | `
- Select-Object DisplayName, UninstallString | `
- ? DisplayName -like "Microsoft Visual C++ 2010*Redistributable*" | `
- % -Process {  $unstr=$_.UninstallString.Replace("\Package Cache\","\Package_Cache\" ).Replace("  "," ") ;
-               $items = ($unstr.split(" ",2));
-                        $items[0]= $items[0].Replace("\Package_Cache\","\Package Cache\" ).Replace("`"", "") ;
-                        $items[1]= $items[1].Replace("/I","/x"); 
-                        & ($items[0]) $items[1] /passive| Out-Null; 
-                        }
-                
+uninstall-program "Microsoft Visual Studio Tools for Applications 2015 Language Support"  
+uninstall-program "Microsoft Visual Studio Tools for Applications 2015"  
+
+
+uninstall-program "Microsoft Visual Studio 2015 Shell (Integrated)"
+uninstall-program "Microsoft Visual Studio 2015 Shell (Isolated)" 
+
+uninstall-program "*help viewer 2.2*"
+
+
+uninstall-program "*sql server*" 
+uninstall-program "*sql server*"  #64 bit
+uninstall-program "Microsoft Visual C++*Redistributable*"
+uninstall-program "Microsoft Visual C++*Redistributable*" 
 
 
  }
