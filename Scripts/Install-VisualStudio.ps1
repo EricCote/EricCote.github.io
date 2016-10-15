@@ -65,17 +65,9 @@ Download-File "http://download.microsoft.com/download/e/4/c/e4c393a9-8fff-441b-a
 
 if ($false)
 {
-#& ($drv + 'setup.exe') /qs `
-#                       /Action=uninstall `
-#                       /IAcceptSqlServerLicenseTerms `
-#                       /Features=SQL,AS,RS,IS,DQC,MDS,SQL_SHARED_MR,Tools `
-#                       /InstanceName=MSSQLSERVER | Out-Null
+& ($dl +  "vs_community.exe") /Uninstall /Force /passive  | Out-Null
 
-#$ssms= ($dl + "SSMS-setup-enu.exe")
-#& ($ssms) /uninstall /passive | Out-Null
 
-#$ssdt= ($dl + "SSDTSetup.exe")
-#& ($ssdt) /uninstall /passive | Out-Null
 
 
 uninstall-program "IIS Express Application Compatibility Database for x86"         
@@ -89,7 +81,7 @@ uninstall-program "Microsoft SQL Server 2016 Management Objects  (x64)"
 
 uninstall-program "Microsoft SQL Server 2014 Transact-SQL ScriptDom*"               
 uninstall-program "Microsoft System CLR Types for SQL Server 2014*"                
-uninstall-program "Microsoft SQL Server 2014 Management Objects  (x64)"            
+uninstall-program "Microsoft SQL Server 2014 Management Objects  (x64)*"            
 
 uninstall-program "Active Directory Authentication Library for SQL Server"         
 
@@ -124,7 +116,7 @@ uninstall-program "Microsoft SQL Server 2014 Management Objects*"
 uninstall-program "Microsoft SQL Server 2014 T-SQL Language Service*"                         
 
 
-#uninstall-program "Active Directory Authentication Library for SQL Server (x86)*"                
+uninstall-program "Active Directory Authentication Library for SQL Server (x86)*"                
        
 
 uninstall-program "Microsoft Visual Studio 2015 Windows Diagnostic Tools"                    
@@ -169,7 +161,7 @@ uninstall-program "Microsoft Visual Studio 2015 Update 3 IntelliTrace (x86)"
             
 uninstall-program "Microsoft Visual Studio 2015 XAML Application Timeline"                   
 uninstall-program "Microsoft Visual Studio 2015 XAML Visual Diagnostics"    
-#uninstall-program "Microsoft Visual Studio 2015 XAML Designer"       
+#uninstall-program "Microsoft Visual Studio 2015 XAML Designer"
 
 uninstall-program "Microsoft Visual Studio 2015 Shell (Minimum) Interop Assemblies"   
                  
