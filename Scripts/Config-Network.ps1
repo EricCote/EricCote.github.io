@@ -16,8 +16,8 @@ $hex6 = '{0:x2}' -f ($ip4 -as [int]);
 　
 $macAddress =$hex1+$hex2+$hex3+$hex4+$hex5+$hex6;
 　
-Get-VMNetworkAdapter -vmName "win" | `
- where SwitchName -EQ "external Network" | `
+Get-VMNetworkAdapter -vmName "MS-GATE" | `
+ where SwitchName -EQ "External Network" | `
  Set-VMNetworkAdapter   -StaticMacAddress $macAddress
  
  
