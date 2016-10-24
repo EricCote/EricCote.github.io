@@ -44,7 +44,7 @@ Function RegisterRP {
     )
 
     Write-Host "Registering resource provider '$ResourceProviderNamespace'";
-    Register-AzureRmResourceProvider -ProviderNamespace $ResourceProviderNamespace -Force;
+    Register-AzureRmResourceProvider -ProviderNamespace $ResourceProviderNamespace ;
 }
 
 
@@ -57,9 +57,6 @@ param(
  [string]$resourceGroupName= "win10vm",
 
  [string]$resourceGroupLocation = "canadaeast" ,
-
- [string]
- $deploymentName = "win10a",
 
  [string]
  $templateFilePath = "https://raw.githubusercontent.com/EricCote/EricCote.github.io/master/AzureVm/template.json",
@@ -113,5 +110,17 @@ Write-Host "Starting deployment...";
  New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateUri $templateFilePath -TemplateParameterUri $parametersFilePath;
 
 
+$ip = Get-AzureRmPublicIpAddress -Name "win10a-ip" -ResourceGroupName "win10vm"
+
+$ip.DnsSettings = New-Object -TypeName Microsoft.Azure.Commands.Network.Models.PSPublicIpAddressDnsSettings
+
+$ip.DnsSettings.DomainNameLabel="win10a"
+
+Set-AzureRmPublicIpAddress -PublicIpAddress $ip 
+
+
+
 
 }
+
+

@@ -27,7 +27,7 @@
             "value": "win10a-nsg"
         },
         "adminPassword": {
-            "value": "afi1345678!"
+            "value": "afi12345678!"
         },
         "storageAccountType": {
             "value": "Premium_LRS"
