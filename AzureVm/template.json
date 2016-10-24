@@ -202,7 +202,8 @@
                 "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
                 "dnsSettings": {
                     "domainNameLabel": "[parameters('virtualMachineName')]"
-                    }
+                }
+            }
         },
         {
             "name": "[parameters('networkSecurityGroupName')]",
