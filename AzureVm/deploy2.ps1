@@ -109,15 +109,6 @@ else{
 Write-Host "Starting deployment...";
  New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateUri $templateFilePath -TemplateParameterUri $parametersFilePath;
 
-
-#$ip = Get-AzureRmPublicIpAddress -Name "win10a-ip" -ResourceGroupName "win10vm"
-#$ip.DnsSettings = New-Object -TypeName Microsoft.Azure.Commands.Network.Models.PSPublicIpAddressDnsSettings
-#$ip.DnsSettings.DomainNameLabel="win10a"
-#Set-AzureRmPublicIpAddress -PublicIpAddress $ip 
-
-
-
-
 }
 
 #remove-AzureRmResourceGroup -Name "win10vm" -force
