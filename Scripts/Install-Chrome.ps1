@@ -1,6 +1,7 @@
 ﻿([bool] $Uninstall = $false)
 
 $dl =  Join-Path  $env:USERPROFILE "downloads\"
+$env:APPDATA
 
 
 $master_prefs = @'
@@ -53,9 +54,9 @@ if ($Uninstall) {
   
   Start-Sleep -Seconds 3
 
-#  rd "C:\Users\afi\AppData\Roaming\google"  -recurse -force
+#  rd (Join-Path  $env:APPDATA "\google")  -recurse -force
 #  rd "c:\program files\Google"              -recurse -force
-  rd "C:\Users\afi\AppData\local\google"    -recurse -force
+  rd (Join-Path  $env:APPDATA "\..\local\google")  -recurse -force
   rd "c:\program files (x86)\Google"        -recurse -force
 
 }
