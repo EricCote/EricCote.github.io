@@ -583,6 +583,9 @@ switch ($step)
         #Put right time zone
         tzutil /s "Eastern Standard Time"
 
+        #set the screen to never sleep.
+        powercfg /setacvalueindex SCHEME_CURRENT SUB_VIDEO VIDEOIDLE 0
+
         #run the script at next startup
         Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -name "myScript" -value ('powershell -ExecutionPolicy bypass -f "' + (Join-Path (Get-ScriptPath) $MyInvocation.MyCommand.Name ) + '"')
            

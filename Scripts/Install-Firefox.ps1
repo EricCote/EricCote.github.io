@@ -1,7 +1,13 @@
-﻿([bool] $Uninstall = $false)
+﻿[CmdletBinding()]
+Param
+    ( 
+    [string]$Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false 
+    )
 
-$dl =  Join-Path  $env:USERPROFILE "downloads\"
-
+if (-not $Uninstall)
+{
+$dl=$Destination;
 
 $ini= @'
 [Install]
@@ -15,7 +21,7 @@ pref("browser.shell.checkDefaultBrowser", false);
 //defaultPref("startup.homepage_welcome_url", "");
 pref("browser.startup.homepage_override.mstone","49.0.2");
 pref("browser.usedOnWindows10",true);
-pref("browser.disableResetPrompt", true);  //"previous install detected, click here to refresh and remove addon from your profile"
+pref("brfowser.disableResetPrompt", true);  //To remove the prompt of: "previous install detected, click here to refresh and remove addon from your profile"
 defaultPref("browser.tabs.remote.force-enable", true);
 
 defaultPref("browser.startup.homepage", "data:text/plain,browser.startup.homepage=http://www.afiexpertise.com/fr/");
@@ -32,12 +38,14 @@ defaultPref("datareporting.policy.dataSubmissionEnabled", false);
 defaultPref("datareporting.policy.dataSubmissionPolicyResponseType", "accepted-info-bar-dismissed");
 defaultPref("datareporting.policy.dataSubmissionPolicyAccepted", false);
 
-'
+
+'@
 
 
 $override= @'
 [XRE]
 EnableProfileMigrator=false
+
 '@
 
 
@@ -61,13 +69,13 @@ Set-Content "c:\program files (x86)\mozilla firefox\browser\override.ini" $overr
 
 md "c:\program files (x86)\mozilla firefox\distribution\extensions"
 copy (Join-Path $dl fr_language.xpi ) ("c:\program files (x86)\mozilla firefox\distribution\extensions\langpack-fr@firefox.mozilla.org.xpi")
+}
 
-
-if ($Uninstall) {
- & "C:\Program Files (x86)\Mozilla Firefox\uninstall\helper.exe" /silent | Out-Null
-rd  (Join-Path  $env:APPDATA "\..\local\mozilla") -Recurse -Force
-rd  (Join-Path  $env:APPDATA "\mozilla") -Recurse -Force
-rd "c:\program files (x86)\mozilla firefox"  -Recurse -Force
+else {  ## $Uninstall
+     & "C:\Program Files (x86)\Mozilla Firefox\uninstall\helper.exe" /silent | Out-Null
+    rd  (Join-Path  $env:APPDATA "\..\local\mozilla") -Recurse -Force
+    rd  (Join-Path  $env:APPDATA "\mozilla") -Recurse -Force
+    rd "c:\program files (x86)\mozilla firefox"  -Recurse -Force
 }
 
  

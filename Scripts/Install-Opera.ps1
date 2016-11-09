@@ -1,6 +1,14 @@
-﻿([bool] $Uninstall = $false)
+﻿[CmdletBinding()]
+Param
+    ( 
+    [string] $Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false 
+    )
 
-$dl =  Join-Path  $env:USERPROFILE "downloads\"
+$dl=$Destination;
+
+if (-not $Uninstall)
+{
 
 $operaLink = "http://dl.opera.com/download/get/?id=40225&autoupdate=1&ni=1&stream=stable&utm_source=(direct)_via_opera_com&utm_campaign=(direct)_via_opera_com&utm_medium=doc&niuid=83e71787-9541-4660-ada2-5833a366d8bb"
 
@@ -32,9 +40,9 @@ $prefs=@'
 #md "c:\users\default\appData\roaming\Opera Software\Opera Stable\" -ErrorAction Ignore
 #Set-Content "c:\users\default\appData\roaming\Opera Software\Opera Stable\preferences" $prefs
 
+}
 
-
-if ($Uninstall) {
+else { # uninstall
 
     & "c:\Program Files (x86)\Opera\launcher.exe" /silent /uninstall | Out-Null
     rd  (Join-Path  $env:APPDATA "\..\local\Opera Software") -Recurse -Force
