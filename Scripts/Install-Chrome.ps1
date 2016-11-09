@@ -1,9 +1,15 @@
-﻿([bool] $Uninstall = $false)
+﻿[CmdletBinding()]
+Param
+    ( 
+    [string] $Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false 
+    )
 
-$dl =  Join-Path  $env:USERPROFILE "downloads\"
-$env:APPDATA
 
+$dl =  $Destination
 
+if(-not $Uninstall)
+{
 $master_prefs = @'
 { 
  "browser": {
@@ -49,7 +55,10 @@ copy (Join-Path $dl "master_preferences.json") "c:\program files (x86)\Google\Ch
 
 del "C:\Users\Public\Desktop\*chrome*.lnk"
 
-if ($Uninstall) {
+}
+
+
+else {  # $uninstall
   & MsiExec.exe /X  ($dl + "GoogleChrome_setup64.msi")  /passive | Out-Null
   
   Start-Sleep -Seconds 3
