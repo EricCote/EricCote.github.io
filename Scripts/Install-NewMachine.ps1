@@ -139,10 +139,10 @@ function Update-StoreApps
 
 function Disable-IEESC
 {
-    $AdminKey = “HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}”
-    $UserKey = “HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}”
-    Set-ItemProperty -Path $AdminKey -Name “IsInstalled” -Value 0
-    Set-ItemProperty -Path $UserKey -Name “IsInstalled” -Value 0
+    $AdminKey = â€œHKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}â€
+    $UserKey = â€œHKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}â€
+    Set-ItemProperty -Path $AdminKey -Name â€œIsInstalledâ€ -Value 0
+    Set-ItemProperty -Path $UserKey -Name â€œIsInstalledâ€ -Value 0
 
     Rundll32 iesetup.dll, IEHardenLMSettings
     Rundll32 iesetup.dll, IEHardenUser
@@ -263,11 +263,18 @@ function Install-FrenchLanguagePack
         }
     }
        
-    if ($isServer -and $OsVersion -lt 10)
-    {
-        $LanguagePackSource = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2014/11/windows8.1-kb3012997-x64-fr-fr-server_f5e444a46e0b557f67a0df7fa28330f594e50ea7.cab"
-    }      
-       
+    if ($isServer)
+    {   
+        if ($OsVersion -eq 10) 
+        {
+           $LanguagePackSource = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2016/09/lp_84495308108c7684657c4be5f032341565f47410.cab";
+        }
+        if ($OsVersion -lt 10)
+        {
+            $LanguagePackSource = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2014/11/windows8.1-kb3012997-x64-fr-fr-server_f5e444a46e0b557f67a0df7fa28330f594e50ea7.cab";
+        }   
+    } 
+    
     if (-NOT $isServer -and $OsVersion -lt 10)
     {
         $LanguagePackSource = "http://download.windowsupdate.com/c/msdownload/update/software/updt/2014/11/windows8.1-kb3012997-x64-fr-fr-client_134770b2c1e1abaab223d584d0de5f3b4d683697.cab"
@@ -359,95 +366,95 @@ function Change-ProcessName
          $code = @'
             static string originalImagePathName;
             static int unicodeSize = IntPtr.Size * 2;
- 
+Â 
             static void GetPointers(out IntPtr imageOffset, out IntPtr imageBuffer)
             {
-                IntPtr pebBaseAddress = GetBasicInformation().PebBaseAddress;
-                var processParameters = Marshal.ReadIntPtr(pebBaseAddress, 4 * IntPtr.Size);
-                imageOffset = Increment(processParameters,4 * 4 + 5 * IntPtr.Size + unicodeSize + IntPtr.Size + unicodeSize);
-                imageBuffer = Marshal.ReadIntPtr(imageOffset, IntPtr.Size);
+Â Â Â Â             IntPtr pebBaseAddress = GetBasicInformation().PebBaseAddress;
+Â Â Â Â             var processParameters = Marshal.ReadIntPtr(pebBaseAddress, 4 * IntPtr.Size);
+Â Â Â Â             imageOffset = Increment(processParameters,4 * 4 + 5 * IntPtr.Size + unicodeSize + IntPtr.Size + unicodeSize);
+Â Â Â Â             imageBuffer = Marshal.ReadIntPtr(imageOffset, IntPtr.Size);
             }
- 
+Â 
             public static void ChangeImagePathName(string newFileName)
             {
-                IntPtr imageOffset, imageBuffer;
-                GetPointers(out imageOffset, out imageBuffer);
- 
-                //Read original data
-                var imageLen = Marshal.ReadInt16(imageOffset);
-                originalImagePathName = Marshal.PtrToStringUni(imageBuffer, imageLen / 2);
- 
-                var newImagePathName = Path.Combine(Path.GetDirectoryName(originalImagePathName), newFileName);
-                if (newImagePathName.Length > originalImagePathName.Length) throw new Exception("new ImagePathName cannot be longer than the original one");
- 
-                //Write the string, char by char
-                var ptr = imageBuffer;
-                foreach(var unicodeChar in newImagePathName)
-                {
-                    Marshal.WriteInt16(ptr, unicodeChar);
-                    ptr = Increment(ptr,2);
-                }
-                Marshal.WriteInt16(ptr, 0);
- 
-                //Write the new length
-                Marshal.WriteInt16(imageOffset, (short) (newImagePathName.Length * 2));
+Â Â Â Â             IntPtr imageOffset, imageBuffer;
+Â Â Â Â             GetPointers(out imageOffset, out imageBuffer);
+Â 
+Â Â Â Â             //Read original data
+Â Â Â Â             var imageLen = Marshal.ReadInt16(imageOffset);
+Â Â Â Â             originalImagePathName = Marshal.PtrToStringUni(imageBuffer, imageLen / 2);
+Â 
+Â Â Â Â             var newImagePathName = Path.Combine(Path.GetDirectoryName(originalImagePathName), newFileName);
+Â Â Â Â             if (newImagePathName.Length > originalImagePathName.Length) throw new Exception("new ImagePathName cannot be longer than the original one");
+Â 
+Â Â Â Â             //Write the string, char by char
+Â Â Â Â             var ptr = imageBuffer;
+Â Â Â Â             foreach(var unicodeChar in newImagePathName)
+Â Â Â Â             {
+Â Â Â Â Â Â Â Â             Marshal.WriteInt16(ptr, unicodeChar);
+Â Â Â Â Â Â Â Â             ptr = Increment(ptr,2);
+Â Â Â Â             }
+Â Â Â Â             Marshal.WriteInt16(ptr, 0);
+Â 
+Â Â Â Â             //Write the new length
+Â Â Â Â             Marshal.WriteInt16(imageOffset, (short) (newImagePathName.Length * 2));
             }
- 
+Â 
             public static void RestoreImagePathName()
             {
-                IntPtr imageOffset, ptr;
-                GetPointers(out imageOffset, out ptr);
- 
-                foreach (var unicodeChar in originalImagePathName)
-                {
-                    Marshal.WriteInt16(ptr, unicodeChar);
-                    ptr = Increment(ptr,2);
-                }
-                Marshal.WriteInt16(ptr, 0);
-                Marshal.WriteInt16(imageOffset, (short)(originalImagePathName.Length * 2));
+Â Â Â Â             IntPtr imageOffset, ptr;
+Â Â Â Â             GetPointers(out imageOffset, out ptr);
+Â 
+Â Â Â Â             foreach (var unicodeChar in originalImagePathName)
+Â Â Â Â             {
+Â Â Â Â Â Â Â Â             Marshal.WriteInt16(ptr, unicodeChar);
+Â Â Â Â Â Â Â Â             ptr = Increment(ptr,2);
+Â Â Â Â             }
+Â Â Â Â             Marshal.WriteInt16(ptr, 0);
+Â Â Â Â             Marshal.WriteInt16(imageOffset, (short)(originalImagePathName.Length * 2));
             }
- 
+Â 
             public static ProcessBasicInformation GetBasicInformation()
             {
-                uint status;
-                ProcessBasicInformation pbi;
-                int retLen;
-                var handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
-                if ((status = NtQueryInformationProcess(handle, 0,
-                    out pbi, Marshal.SizeOf(typeof(ProcessBasicInformation)), out retLen)) >= 0xc0000000)
-                    throw new Exception("Windows exception. status=" + status);
-                return pbi;
+Â Â Â Â             uint status;
+Â Â Â Â             ProcessBasicInformation pbi;
+Â Â Â Â             int retLen;
+Â Â Â Â             var handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
+Â Â Â Â             if ((status = NtQueryInformationProcess(handle, 0,
+Â Â Â Â Â Â Â Â             out pbi, Marshal.SizeOf(typeof(ProcessBasicInformation)), out retLen)) >= 0xc0000000)
+Â Â Â Â Â Â Â Â             throw new Exception("Windows exception. status=" + status);
+Â Â Â Â             return pbi;
             }
- 
+Â 
             [DllImport("ntdll.dll")]
             public static extern uint NtQueryInformationProcess(
-                [In] IntPtr ProcessHandle,
-                [In] int ProcessInformationClass,
-                [Out] out ProcessBasicInformation ProcessInformation,
-                [In] int ProcessInformationLength,
-                [Out] [Optional] out int ReturnLength
-                );
- 
+Â Â Â Â             [In] IntPtr ProcessHandle,
+Â Â Â Â             [In] int ProcessInformationClass,
+Â Â Â Â             [Out] out ProcessBasicInformation ProcessInformation,
+Â Â Â Â             [In] int ProcessInformationLength,
+Â Â Â Â             [Out] [Optional] out int ReturnLength
+Â Â Â Â             );
+Â 
             public static IntPtr Increment(IntPtr ptr, int value)
             {
-                unchecked
-                {
-                    if (IntPtr.Size == sizeof(Int32))
-                        return new IntPtr(ptr.ToInt32() + value);
-                    else
-                        return new IntPtr(ptr.ToInt64() + value);
-                }
+Â Â Â Â             unchecked
+Â Â Â Â             {
+Â Â Â Â Â Â Â Â             if (IntPtr.Size == sizeof(Int32))
+Â Â Â Â Â Â Â Â Â Â Â Â             return new IntPtr(ptr.ToInt32() + value);
+Â Â Â Â Â Â Â Â             else
+Â Â Â Â Â Â Â Â Â Â Â Â             return new IntPtr(ptr.ToInt64() + value);
+Â Â Â Â             }
             }
- 
+Â 
             [StructLayout(LayoutKind.Sequential)]
             public struct ProcessBasicInformation
             {
-                public uint ExitStatus;
-                public IntPtr PebBaseAddress;
-                public IntPtr AffinityMask;
-                public int BasePriority;
-                public IntPtr UniqueProcessId;
-                public IntPtr InheritedFromUniqueProcessId;
+Â Â Â Â             public uint ExitStatus;
+Â Â Â Â             public IntPtr PebBaseAddress;
+Â Â Â Â             public IntPtr AffinityMask;
+Â Â Â Â             public int BasePriority;
+Â Â Â Â             public IntPtr UniqueProcessId;
+Â Â Â Â             public IntPtr InheritedFromUniqueProcessId;
             }
 '@
 
@@ -851,7 +858,7 @@ switch ($step)
         Set-ExecutionPolicy Unrestricted  -Scope LocalMachine -Force  
      
         "4">($stepFile) 
-        "Étape 3 terminée"
+        "Ã‰tape 3 terminÃ©e"
 
         Restart-Computer 
         break  
@@ -908,7 +915,7 @@ switch ($step)
     {
 
          "6">($stepFile) 
-        "Étape 5 terminé"
+        "Ã‰tape 5 terminÃ©"
       
         break  
     }
