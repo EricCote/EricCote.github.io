@@ -115,8 +115,7 @@ function Get-ScriptPath
   }
   else
   {
-    #return "c:\scripts"
-    return "C:\demo\AfiSetup\Scripts"
+    return Split-Path ($psise.CurrentFile.FullPath) -Parent
   }
 
 }
@@ -139,10 +138,10 @@ function Update-StoreApps
 
 function Disable-IEESC
 {
-    $AdminKey = “HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}”
-    $UserKey = “HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}”
-    Set-ItemProperty -Path $AdminKey -Name “IsInstalled” -Value 0
-    Set-ItemProperty -Path $UserKey -Name “IsInstalled” -Value 0
+    $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
+    $UserKey  = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}"
+    Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
+    Set-ItemProperty -Path $UserKey -Name "IsInstalled" -Value 0
 
     Rundll32 iesetup.dll, IEHardenLMSettings
     Rundll32 iesetup.dll, IEHardenUser
@@ -288,7 +287,7 @@ function Install-FrenchLanguagePack
 
 function Install-FrenchKeyboardsAndDictionaries
 {
-    if (-NOT $isserver -and $OsVersion -eq 10)
+    if ($OsVersion -eq 10)
     {      
         #Get-WindowsCapability -online
         #add-WindowsCapability -online -name Language.Basic~~~fr-FR~0.0.1.0
@@ -311,12 +310,12 @@ function Set-LanguageAndKeyboard
         [ValidateSet("en-US.xml","fr-FR.xml","fr-CA.xml")] $fileName
     )
 
-
-
     #$confPath= Join-Path "C:\demo"  "en-US.xml"
+
+    $confPath = $filename;
     $confPath = Join-Path (Get-ScriptPath) $fileName
     $arguments = 'intl.cpl,, /f:"' + $confPath + '"'
-    Start-Process control.exe -ArgumentList ($arguments)     
+    & control.exe $arguments  | Out-Null;    
 }
 
 #Get VS Setup filepath exe  (ex: Vs_enterprise.exe or vs_community.exe) 
@@ -366,95 +365,95 @@ function Change-ProcessName
          $code = @'
             static string originalImagePathName;
             static int unicodeSize = IntPtr.Size * 2;
- 
+ 
             static void GetPointers(out IntPtr imageOffset, out IntPtr imageBuffer)
             {
-                IntPtr pebBaseAddress = GetBasicInformation().PebBaseAddress;
-                var processParameters = Marshal.ReadIntPtr(pebBaseAddress, 4 * IntPtr.Size);
-                imageOffset = Increment(processParameters,4 * 4 + 5 * IntPtr.Size + unicodeSize + IntPtr.Size + unicodeSize);
-                imageBuffer = Marshal.ReadIntPtr(imageOffset, IntPtr.Size);
+                IntPtr pebBaseAddress = GetBasicInformation().PebBaseAddress;
+                var processParameters = Marshal.ReadIntPtr(pebBaseAddress, 4 * IntPtr.Size);
+                imageOffset = Increment(processParameters,4 * 4 + 5 * IntPtr.Size + unicodeSize + IntPtr.Size + unicodeSize);
+                imageBuffer = Marshal.ReadIntPtr(imageOffset, IntPtr.Size);
             }
- 
+ 
             public static void ChangeImagePathName(string newFileName)
             {
-                IntPtr imageOffset, imageBuffer;
-                GetPointers(out imageOffset, out imageBuffer);
- 
-                //Read original data
-                var imageLen = Marshal.ReadInt16(imageOffset);
-                originalImagePathName = Marshal.PtrToStringUni(imageBuffer, imageLen / 2);
- 
-                var newImagePathName = Path.Combine(Path.GetDirectoryName(originalImagePathName), newFileName);
-                if (newImagePathName.Length > originalImagePathName.Length) throw new Exception("new ImagePathName cannot be longer than the original one");
- 
-                //Write the string, char by char
-                var ptr = imageBuffer;
-                foreach(var unicodeChar in newImagePathName)
-                {
-                    Marshal.WriteInt16(ptr, unicodeChar);
-                    ptr = Increment(ptr,2);
-                }
-                Marshal.WriteInt16(ptr, 0);
- 
-                //Write the new length
-                Marshal.WriteInt16(imageOffset, (short) (newImagePathName.Length * 2));
+                IntPtr imageOffset, imageBuffer;
+                GetPointers(out imageOffset, out imageBuffer);
+ 
+                //Read original data
+                var imageLen = Marshal.ReadInt16(imageOffset);
+                originalImagePathName = Marshal.PtrToStringUni(imageBuffer, imageLen / 2);
+ 
+                var newImagePathName = Path.Combine(Path.GetDirectoryName(originalImagePathName), newFileName);
+                if (newImagePathName.Length > originalImagePathName.Length) throw new Exception("new ImagePathName cannot be longer than the original one");
+ 
+                //Write the string, char by char
+                var ptr = imageBuffer;
+                foreach(var unicodeChar in newImagePathName)
+                {
+                    Marshal.WriteInt16(ptr, unicodeChar);
+                    ptr = Increment(ptr,2);
+                }
+                Marshal.WriteInt16(ptr, 0);
+ 
+                //Write the new length
+                Marshal.WriteInt16(imageOffset, (short) (newImagePathName.Length * 2));
             }
- 
+ 
             public static void RestoreImagePathName()
             {
-                IntPtr imageOffset, ptr;
-                GetPointers(out imageOffset, out ptr);
- 
-                foreach (var unicodeChar in originalImagePathName)
-                {
-                    Marshal.WriteInt16(ptr, unicodeChar);
-                    ptr = Increment(ptr,2);
-                }
-                Marshal.WriteInt16(ptr, 0);
-                Marshal.WriteInt16(imageOffset, (short)(originalImagePathName.Length * 2));
+                IntPtr imageOffset, ptr;
+                GetPointers(out imageOffset, out ptr);
+ 
+                foreach (var unicodeChar in originalImagePathName)
+                {
+                    Marshal.WriteInt16(ptr, unicodeChar);
+                    ptr = Increment(ptr,2);
+                }
+                Marshal.WriteInt16(ptr, 0);
+                Marshal.WriteInt16(imageOffset, (short)(originalImagePathName.Length * 2));
             }
- 
+ 
             public static ProcessBasicInformation GetBasicInformation()
             {
-                uint status;
-                ProcessBasicInformation pbi;
-                int retLen;
-                var handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
-                if ((status = NtQueryInformationProcess(handle, 0,
-                    out pbi, Marshal.SizeOf(typeof(ProcessBasicInformation)), out retLen)) >= 0xc0000000)
-                    throw new Exception("Windows exception. status=" + status);
-                return pbi;
+                uint status;
+                ProcessBasicInformation pbi;
+                int retLen;
+                var handle = System.Diagnostics.Process.GetCurrentProcess().Handle;
+                if ((status = NtQueryInformationProcess(handle, 0,
+                    out pbi, Marshal.SizeOf(typeof(ProcessBasicInformation)), out retLen)) >= 0xc0000000)
+                    throw new Exception("Windows exception. status=" + status);
+                return pbi;
             }
- 
+ 
             [DllImport("ntdll.dll")]
             public static extern uint NtQueryInformationProcess(
-                [In] IntPtr ProcessHandle,
-                [In] int ProcessInformationClass,
-                [Out] out ProcessBasicInformation ProcessInformation,
-                [In] int ProcessInformationLength,
-                [Out] [Optional] out int ReturnLength
-                );
- 
+                [In] IntPtr ProcessHandle,
+                [In] int ProcessInformationClass,
+                [Out] out ProcessBasicInformation ProcessInformation,
+                [In] int ProcessInformationLength,
+                [Out] [Optional] out int ReturnLength
+                );
+ 
             public static IntPtr Increment(IntPtr ptr, int value)
             {
-                unchecked
-                {
-                    if (IntPtr.Size == sizeof(Int32))
-                        return new IntPtr(ptr.ToInt32() + value);
-                    else
-                        return new IntPtr(ptr.ToInt64() + value);
-                }
+                unchecked
+                {
+                    if (IntPtr.Size == sizeof(Int32))
+                        return new IntPtr(ptr.ToInt32() + value);
+                    else
+                        return new IntPtr(ptr.ToInt64() + value);
+                }
             }
- 
+ 
             [StructLayout(LayoutKind.Sequential)]
             public struct ProcessBasicInformation
             {
-                public uint ExitStatus;
-                public IntPtr PebBaseAddress;
-                public IntPtr AffinityMask;
-                public int BasePriority;
-                public IntPtr UniqueProcessId;
-                public IntPtr InheritedFromUniqueProcessId;
+                public uint ExitStatus;
+                public IntPtr PebBaseAddress;
+                public IntPtr AffinityMask;
+                public int BasePriority;
+                public IntPtr UniqueProcessId;
+                public IntPtr InheritedFromUniqueProcessId;
             }
 '@
 
@@ -606,13 +605,13 @@ switch ($step)
         Set-AutoLogon -loginName '.\afi' -password 'afi12345678!' -count 5 
 
 
-        #If windows client
-        if (-NOT $isserver )
+   
+        #If windows defender is not disabled....
+        if (-NOT (Get-MpPreference).DisableRealtimeMonitoring )
         {
             #Disable defender until next reboot
             Set-MpPreference -DisableRealtimeMonitoring $true 
-            #update the windows store
-          #  Update-StoreApps
+
         }
 
 
@@ -641,10 +640,12 @@ switch ($step)
     {
         Show-Warning
 
-        #Disable Windows Defender
-        if (-NOT $isserver -and $OsVersion -eq 10)
+        "Disable Windows Defender"
+       if (-NOT (Get-MpPreference).DisableRealtimeMonitoring )
         {
-            Set-MpPreference -DisableRealtimeMonitoring $true     
+            #Disable defender until next reboot
+            Set-MpPreference -DisableRealtimeMonitoring $true 
+
         }
 
 
@@ -665,7 +666,7 @@ switch ($step)
         #en-US.xml affiche en anglais, avec le clavier canadien Francais (Windows 8.1, windows 10, Windows Server)
         #fr-FR.xml affiche en francais, avec le clavier Canadien (windows 8.1, Windows Server 2012R2)
         #fr-CA.xml affiche en francais-Ca, avec le clavier Canadien (windows 10, Windows Server 2016)
-        Set-LanguageAndKeyboard "en-US.xml"
+        Set-LanguageAndKeyboard "fr-CA.xml"
 
 
         "Installing updates (part 2)"
@@ -685,11 +686,12 @@ switch ($step)
        
         Show-Warning
 
-        #Disable Windows Defender
-        if (-NOT $isserver -and $OsVersion -eq 10)
+        "Disable Windows Defender"
+        if (-NOT (Get-MpPreference).DisableRealtimeMonitoring )
         {
-             
-           Set-MpPreference -DisableRealtimeMonitoring $true     
+            #Disable defender until next reboot
+            Set-MpPreference -DisableRealtimeMonitoring $true 
+
         }
 
         "Installing VS2015 stuff"
@@ -825,19 +827,13 @@ switch ($step)
      
      }
         
-        "Install Keyboard"  
-        Set-LanguageAndKeyboard "en-US.xml"    
+
           
 
         "Install Browsers"
-        $cmd = Join-Path (Get-ScriptPath) get-browsers.ps1
-        & $cmd $dl  
-        $cmd = Join-Path (Get-ScriptPath) chrome.cmd
-        & $cmd $dl.Trimend('\')
-        $cmd = Join-Path (Get-ScriptPath) firefox.cmd
-        & $cmd $dl.Trimend('\')
-        $cmd = Join-Path (Get-ScriptPath) opera.cmd
-        & $cmd $dl.Trimend('\')
+        & .\Install-Chrome.ps1 $dl
+        & .\Install-Firefox.ps1 $dl
+        & .\Install-Opera.ps1 $dl
  
 
         "Initialize Visual Studio"
@@ -858,7 +854,7 @@ switch ($step)
         Set-ExecutionPolicy Unrestricted  -Scope LocalMachine -Force  
      
         "4">($stepFile) 
-        "Étape 3 terminée"
+        "Etape 3 termin�e"
 
         Restart-Computer 
         break  

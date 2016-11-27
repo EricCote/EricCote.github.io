@@ -1,5 +1,11 @@
-﻿
-$dl=$env:USERPROFILE + "\downloads\"
+﻿[CmdletBinding()]
+Param
+    ( 
+    [string]$Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false 
+    )
+
+
 
 function Download-File
 {
@@ -53,6 +59,15 @@ function Uninstall-Program
     }
  }
 
+
+if (-not $Uninstall ) {
+$dl=$Destination;
+
+
+#"http://download.microsoft.com/download/4/4/F/44F2C687-BD92-4331-9D4F-882A5AB0D301/SQLServer2016-SSEI-Dev.exe"
+#& ($dl + "SQLServer2016-SSEI-Dev.exe")  -?
+
+
 $sourceSqlDev = "https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLServer2016-x64-ENU-Dev.iso";
 $SqlDev= ($dl + "SQLServer2016-x64-ENU-Dev.iso")
 
@@ -72,7 +87,10 @@ $user = $(whoami)
 & ($drv + 'setup.exe') /qs `
                        /Action=install `
                        /IAcceptSqlServerLicenseTerms `
-                       /Features=sql `
+                       /IACCEPTROPENLICENSETERMS `
+                       /Features=sql,PolyBase,AdvancedAnalytics,AS,RS,DQC,IS,MDS,SQL_SHARED_MR,tools `
+                       /UpdateEnabled=1 `
+                       /UpdateSource=MU `
                        /InstanceName=MSSQLSERVER `
                        /SqlSvcAccount="NT SERVICE\MSSQLSERVER" `
                        /SqlSysAdminAccounts="$user" `
@@ -107,10 +125,14 @@ if (-Not (Test-Path $ssdt)) {
 
 & ($ssdt) INSTALLALL=1 /passive /promptrestart | Out-Null
 
+}
 
-
-if ($false)
+if ($Uninstall)
 {
+
+$SqlDev= ($dl + "SQLServer2016-x64-ENU-Dev.iso")
+$drv=((Mount-DiskImage $SqlDev -PassThru  | Get-Volume).DriveLetter + ':\')
+
 & ($drv + 'setup.exe') /qs `
                        /Action=uninstall `
                        /IAcceptSqlServerLicenseTerms `
