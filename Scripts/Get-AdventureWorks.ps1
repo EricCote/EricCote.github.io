@@ -83,7 +83,6 @@ function Run-Sql
 
     $svr=Get-ServerName
 
-
     return & $sqlcmd -S $svr -E -Q $SqlString
 }
 
@@ -151,17 +150,12 @@ if (Get-ServerName -neq '')
     {
         
         & "C:\Program Files\Microsoft SQL Server\130\Tools\Binn\SqlLocalDB.exe" start 
-        & "C:\Program Files\Microsoft SQL Server\130\Tools\Binn\SqlLocalDB.exe" info mssqllocaldb
-       
+        & "C:\Program Files\Microsoft SQL Server\130\Tools\Binn\SqlLocalDB.exe" info mssqllocaldb  
     }
-
-
 
     #get codeplex-Version
     $codeplexVersion= Get-CodeplexVersion
-
-   
-
+     
     New-Item -type directory -path C:\aw
     $Acl = Get-Acl "C:\aw"
     $Ar = New-Object  system.security.accesscontrol.filesystemaccessrule("BUILTIN\Users","FullControl","ContainerInherit,ObjectInherit","None","Allow")
@@ -192,7 +186,7 @@ if (Get-ServerName -neq '')
     "
 
     run-sql $cmd
-
+    $cmd="SELECT @@version"
 
 
     ###----------------------------------------------------
@@ -248,14 +242,17 @@ if (Get-ServerName -neq '')
 
     if (get-sqlYear -get 2016)
     {
-      $SqlFeature="Standard"
-      if(("Enterprise","Developer") -contains (Get-SqlEdition))
-      { $SqlFeature="Full" }
- 
+     # $SqlFeature="Standard"
+     # if(("Enterprise","Developer") -contains (Get-SqlEdition))
+     # { $SqlFeature="Full" }
+    $SqlFeature="Full"
+    if ((Get-ServerName) -eq '(localdb)\MSSQLLocalDB')
+    {
+        $SqlFeature="Standard"
+    }
+   
 
-    Download-File ("https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-" + $SqlFeature + ".bak")  (Join-path $dl  ("WideWorldImporters-" + $SqlFeature + ".bak"))
-
-
+    Download-File ("https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-" + $SqlFeature + ".bak")  (Join-path $dl  ("WideWorldImporters-$SqlFeature.bak"))
 
     Copy-Item  -Path (Join-path $dl  "WideWorldImporters-*.bak") -Destination 'c:\aw\'
 
@@ -265,13 +262,13 @@ if (Get-ServerName -neq '')
 
     $cmd="
     RESTORE DATABASE WideWorldImporters
-      FROM DISK = 'C:\AW\WideWorldImporters-" +  $SqlFeature  +  ".bak'
+      FROM DISK = 'C:\AW\WideWorldImporters-$SqlFeature .bak'
     WITH   
       MOVE 'WWI_Primary' 
       TO 'C:\AW\WideWorldImporters.mdf', 
       MOVE 'WWI_UserData' 
       TO 'C:\AW\WideWorldImporters_UserData.ndf',
-    "  + $part + "
+       $part
       MOVE 'WWI_Log' 
       TO 'C:\AW\WideWorldImporters.ldf';
     GO
@@ -286,9 +283,6 @@ if (Get-ServerName -neq '')
     ###-------------------------------------------------------------------------------
 
 
-
-
-
     Download-File "https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImportersDW-$SqlFeature.bak" (Join-path $dl "WideWorldImportersDW-$SqlFeature.bak")
 
 
@@ -301,29 +295,24 @@ if (Get-ServerName -neq '')
 
     $cmd="
     RESTORE DATABASE WideWorldImportersDW
-      FROM DISK = 'C:\AW\WideWorldImportersDW-" +  $SqlFeature  +  ".bak'
+      FROM DISK = 'C:\AW\WideWorldImportersDW-$SqlFeature.bak'
     WITH   
       MOVE 'WWI_Primary' 
       TO 'C:\AW\WideWorldImportersDW.mdf', 
       MOVE 'WWI_UserData' 
       TO 'C:\AW\WideWorldImportersDW_UserData.ndf',
-    "  + $part + "
+      $part 
       MOVE 'WWI_Log' 
       TO 'C:\AW\WideWorldImportersDW.ldf';
     GO
     ALTER AUTHORIZATION ON DATABASE::WideWorldImportersDW TO sa;
     "
 
-
     run-sql $cmd
-
 
     }
 
-
-
     #####---------------------------------------------------------------------------------------------
-
 
     del $FileNameAW2014
     del $FileNameAWDW2014
