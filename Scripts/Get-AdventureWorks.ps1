@@ -1,5 +1,3 @@
-﻿Set-ExecutionPolicy -scope process  bypass
-
 
 $dl=$env:USERPROFILE + "\downloads\"
 
@@ -113,7 +111,7 @@ function Get-SqlYear
 
 function Get-codeplexVersion
 {
-   $response= Invoke-WebRequest -uri "http://www.codeplex.com/";
+   $response= Invoke-WebRequest -UseBasicParsing -uri "http://www.codeplex.com/";
    if ($response.RawContent -match "<li>Version \d+\.\d+\.\d+\.(\d+)</li>")
    {   return $Matches[1]; };
 }
@@ -262,7 +260,7 @@ if (Get-ServerName -neq '')
 
     $cmd="
     RESTORE DATABASE WideWorldImporters
-      FROM DISK = 'C:\AW\WideWorldImporters-$SqlFeature .bak'
+      FROM DISK = 'C:\AW\WideWorldImporters-$SqlFeature.bak'
     WITH   
       MOVE 'WWI_Primary' 
       TO 'C:\AW\WideWorldImporters.mdf', 
