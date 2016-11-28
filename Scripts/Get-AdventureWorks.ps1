@@ -23,44 +23,6 @@ function Get-ServerName
 }
 
 
-function Download-FromEdge
-{
- param 
-    (
-        [parameter(position=1,mandatory=$true)] $url,
-        [parameter(position=2,mandatory=$true)] $filename
-
-    )  
-
-    & "cmd.exe" (" /c start Microsoft-Edge:" + $url)
-
-
-    write-host "Waiting file to finish downloading" -NoNewline
-    while ( -not (Test-Path (Join-path $dl  $filename)))
-    {
-        write-host "." -NoNewline
-        start-sleep -Seconds 3
-    }
-    "Download completed."    
-}
-
-function Stop-EdgeBrowser
-{
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName Microsoft.VisualBasic
-
-    $edge= Get-Process -name microsoftEdge
-    do {
-        [Microsoft.VisualBasic.Interaction]::AppActivate("edge")
-        start-sleep -Milliseconds 1500
-        [System.Windows.Forms.SendKeys]::SendWait("%{F4}")
-        start-sleep -Milliseconds 700
-        [System.Windows.Forms.SendKeys]::SendWait("~")
-        start-sleep -Milliseconds 3000
-    }
-    until ($edge[0].HasExited)
-}
-
 
 function Run-Sql
 {
@@ -130,16 +92,7 @@ function Download-File
 }
 
 
-function Enable-AutomaticDownloadEdge
-{
-    #enable automatic download
-    New-Item -name Download -path "HKCU:\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\"
-             
-
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Download" `
-                               -Name "EnableSavePrompt" -Value 0 
-}
-
+#----------------------------------------------------------
 
 if (Get-ServerName -neq '')
 {
@@ -162,14 +115,15 @@ if (Get-ServerName -neq '')
 
     ###------------------------------------------------------
 
-    $FileNameAW2014=Join-path $dl  "Adventure Works 2014 Full Database Backup.zip"
 
+    "Downloading AdventureWorks 2014..."
+    $FileNameAW2014=Join-path $dl  "Adventure Works 2014 Full Database Backup.zip"
     Download-File "http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=880661&FileTime=130507138100830000&Build=$codeplexVersion" $FileNameAW2014
 
     add-type -AssemblyName System.IO.Compression.FileSystem
     [system.io.compression.zipFile]::ExtractToDirectory($FileNameAW2014,'c:\aw\')
 
-
+    "Installing AdventureWorks 2014..."
     $cmd="
     RESTORE DATABASE AdventureWorks2014
       FROM DISK = 'C:\AW\AdventureWorks2014.bak'
@@ -184,12 +138,12 @@ if (Get-ServerName -neq '')
     "
 
     run-sql $cmd
-    $cmd="SELECT @@version"
 
 
     ###----------------------------------------------------
 
 
+    "Downloading AdventureWorks DW 2014..."
     $FileNameAWDW2014=Join-path $dl  "Adventure Works DW 2014 Full Database Backup.zip"
 
     Download-File "http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=880664&FileTime=130511246406570000&Build=$codeplexVersion" $FileNameAWDW2014
@@ -199,6 +153,7 @@ if (Get-ServerName -neq '')
     [system.io.compression.zipFile]::ExtractToDirectory($FileNameAWDW2014,'c:\aw\')
 
 
+    "Installing AdventureWorks DW 2014..."
 
     $cmd="
     RESTORE DATABASE AdventureWorksDW2014
@@ -218,12 +173,15 @@ if (Get-ServerName -neq '')
 
     ###-------------------------------------------------------------------------------
 
+
+    "Downloading AdventureWorks LT 2012..."
+
     $FileNameAWLT2012 = Join-path $dl "AdventureWorksLT2012_Data.mdf";
-
     Download-File  "http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=354847&FileTime=129764108568330000&Build=$codeplexVersion" $FileNameAWLT2012
-
     Copy-Item  -Path $FileNameAWLT2012 -Destination 'c:\aw\'
 
+
+    "Installing AdventureWorks LT 2012..."
     $cmd="
     CREATE DATABASE AdventureWorksLT2012 ON 
     ( FILENAME = N'C:\aw\AdventureWorksLT2012_Data.mdf' )
@@ -249,11 +207,13 @@ if (Get-ServerName -neq '')
         $SqlFeature="Standard"
     }
    
-
+    
+    "Downloading Wide World Importers..."
     Download-File ("https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-" + $SqlFeature + ".bak")  (Join-path $dl  ("WideWorldImporters-$SqlFeature.bak"))
 
     Copy-Item  -Path (Join-path $dl  "WideWorldImporters-*.bak") -Destination 'c:\aw\'
 
+    "Installing Wide World Importers..."
     $part=""
     if ($SqlFeature -eq "Full") 
     {  $part = " MOVE 'WWI_InMemory_Data_1' TO 'c:\AW\WideWorldImporters_InMemory_Data_1', " };
@@ -280,12 +240,14 @@ if (Get-ServerName -neq '')
 
     ###-------------------------------------------------------------------------------
 
-
+    "Downloading Wide World Importers..."
     Download-File "https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImportersDW-$SqlFeature.bak" (Join-path $dl "WideWorldImportersDW-$SqlFeature.bak")
 
 
     Copy-Item  -Path (Join-path $dl  "WideWorldImportersDW-*.bak") -Destination 'c:\aw\'
 
+
+    "Installing Wide World Importers..."
     $part=""
     if ($SqlFeature -eq "Full") 
     {  $part =  " MOVE 'WWIDW_InMemory_Data_1' TO 'c:\AW\WideWorldImportersDW_InMemory_Data_1', "  };
@@ -316,8 +278,6 @@ if (Get-ServerName -neq '')
     del $FileNameAWDW2014
     del $FileNameAWLT2012
     del (Join-path $dl  "WideWorldImporters*.bak") 
-
-
 }
 else
 {
@@ -331,5 +291,4 @@ if ($uninstall -eq $true)
     run-sql "DROP DATABASE AdventureWorksLT2012;"
     run-sql "DROP DATABASE AdventureWorksDW2014;"
     run-sql "DROP DATABASE AdventureWorks2014;"
-
 }
