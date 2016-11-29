@@ -196,7 +196,7 @@ if (Get-ServerName -neq '')
     ###-------------------------------------------------------------------------------
 
 
-    if (get-sqlYear -get 2016)
+    if (get-sqlYear -get 2018)
     {
      # $SqlFeature="Standard"
      # if(("Enterprise","Developer") -contains (Get-SqlEdition))
