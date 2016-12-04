@@ -135,7 +135,7 @@ if (Get-ServerName -neq '')
     $Acl.AddAccessRule($ar)
     Set-Acl "C:\aw" $Acl
 
-
+    add-type -AssemblyName System.IO.Compression.FileSystem
 
 
 
@@ -164,8 +164,6 @@ if (Get-ServerName -neq '')
     
     }
 
-
-
     ###------------------------------------------------------
     if ($Aw)
     {
@@ -173,7 +171,7 @@ if (Get-ServerName -neq '')
         $FileNameAW2014=Join-path $dl  "Adventure Works 2014 Full Database Backup.zip"
         Download-File "http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=880661&FileTime=130507138100830000&Build=$codeplexVersion" $FileNameAW2014
 
-        add-type -AssemblyName System.IO.Compression.FileSystem
+
         [system.io.compression.zipFile]::ExtractToDirectory($FileNameAW2014,'c:\aw\')
 
         "Installing AdventureWorks 2014..."
@@ -223,7 +221,7 @@ if (Get-ServerName -neq '')
     
         ALTER AUTHORIZATION ON DATABASE::AdventureWorksDW2014 TO sa;
         "
-
+        
         run-sql $cmd
 
         del $FileNameAWDW2014 -ErrorAction SilentlyContinue
@@ -272,7 +270,6 @@ if (Get-ServerName -neq '')
         ALTER AUTHORIZATION ON DATABASE::WideWorldImporters TO sa;
         "
 
-
         Run-Sql $cmd
 
         del (Join-path $dl  "WideWorldImporters*.bak") -ErrorAction SilentlyContinue
@@ -316,7 +313,6 @@ if (Get-ServerName -neq '')
         del (Join-path $dl  "WideWorldImporters*.bak") -ErrorAction SilentlyContinue
     }
 
-
 }
 else
 {
@@ -325,14 +321,13 @@ else
 
 if ($Uninstall)
 {
-    run-sql @"
+    run-sql "
       DROP DATABASE WideWorldImportersDW;
       DROP DATABASE WideWorldImporters;
       DROP DATABASE AdventureWorksLT2012;
       DROP DATABASE AdventureWorksDW2014;
       DROP DATABASE AdventureWorks2014;
-"@
+      "
     
     rd c:\aw -Recurse 
-
 }
