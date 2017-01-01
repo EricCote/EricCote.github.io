@@ -344,10 +344,10 @@ function Initialize-IE
     Start-Process 'C:\Program Files (x86)\Internet Explorer\iexplore.exe'  
     start-sleep -Milliseconds 5000
 
-    $proc=get-process -Name iexplore
+    $proc=get-process -Name iexplore | sort Handles
      
-    #[Microsoft.VisualBasic.Interaction]::AppActivate($proc[0].id)
-    start-sleep -Milliseconds 1000
+    [Microsoft.VisualBasic.Interaction]::AppActivate($proc[0].id)
+    start-sleep -Milliseconds 2000
     [System.Windows.Forms.SendKeys]::SendWait("%{F4}")
         
 }
@@ -498,10 +498,6 @@ function Pin-ToTaskbar
 
 
 
-
-
-
-
 function Install-VSExtension 
 {
     param
@@ -579,10 +575,11 @@ switch ($step)
 
        "installation du poste"
         #Disable the script execution policy for future scripts that are running 
-        Set-ExecutionPolicy bypass -Scope LocalMachine -Force
+        Set-ExecutionPolicy bypass -Scope Process -Force
+
         #Set-ExecutionPolicy bypass -Scope CurrentUser
         #Get-ExecutionPolicy -List
-    
+
         #Show hidden Files
         Set-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced HideFileExt "0"
 
@@ -618,8 +615,7 @@ switch ($step)
         #install the media pack on Windows 10 N machines, and the media features on Windows Server
         Install-MediaFeatures
 
-     
-  
+
         #check if Windows Update is configured for Application Updates (Microsoft updates)
         Configure-MSUpdate
      
@@ -850,8 +846,8 @@ switch ($step)
         "Reenable Windows Defender"
         Set-MpPreference -DisableRealtimeMonitoring $false
       
-        "Reenable Execution Policy"
-        Set-ExecutionPolicy Unrestricted  -Scope LocalMachine -Force  
+#        "Reenable Execution Policy"
+#        Set-ExecutionPolicy Unrestricted  -Scope LocalMachine -Force  
      
         "4">($stepFile) 
         "Etape 3 terminée"

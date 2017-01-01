@@ -1,4 +1,4 @@
-﻿Set-ExecutionPolicy -scope process  bypass -force
+﻿#Set-ExecutionPolicy -scope process  bypass -force
 
 
 $dl=$env:USERPROFILE + "\downloads\"
@@ -86,7 +86,9 @@ $destination = ($dl +  "vs_community.exe");
 
 Download-File $WebSource $destination;
 
-& $destination /passive | Out-Null
+& $destination  /passive | Out-Null
+
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installershell.exe" /help  | Out-Null
 
 
 if ($false)
