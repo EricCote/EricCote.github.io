@@ -1,7 +1,16 @@
 ﻿#Set-ExecutionPolicy -scope process  bypass -force
 
 
-$dl=$env:USERPROFILE + "\downloads\"
+[CmdletBinding()]
+Param
+    ( 
+    [string]$Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false 
+    )
+
+
+
+$dl=$Destination
 
 function Download-File
 {
