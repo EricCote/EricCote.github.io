@@ -1,7 +1,15 @@
-﻿#Set-ExecutionPolicy -scope process  bypass -force
+﻿
+
+[CmdletBinding()]
+Param
+    ( 
+    [string]$Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false 
+    )
 
 
-$dl=$env:USERPROFILE + "\downloads\"
+
+$dl=$Destination
 
 function Download-File
 {
@@ -90,6 +98,8 @@ $WebSource = "https://download.microsoft.com/download/D/1/F/D1F328D6-A080-4017-B
 $destination = ($dl +  "vs_enterprise.exe");
 
 
+if (-not $Uninstall)
+{
 Download-File $WebSource $destination;
 
 #& $destination install `
@@ -123,10 +133,10 @@ Download-File $WebSource $destination;
 
 #               /install `
 #               --channelid VisualStudio.15.Release
-
-if ($false)
+}
+else
 {
-& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" /uninstall  | Out-Null
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" /uninstall   | Out-Null
 #& $destination /Uninstall /passive  | Out-Null
 #& $destination /Uninstall /Force /passive  | Out-Null
 
@@ -139,6 +149,7 @@ uninstall-program "Microsoft .NET Framework 4.6.2 SDK"
 uninstall-program "Microsoft .NET Framework 4.6.2 Targeting Pack"  #(inverse???)
 uninstall-program "Microsoft Visual Studio 2017 Tools for Unity"
 uninstall-program "Git version 2.10.2"
+uninstall-program "Xamarin"
 
 uninstall-program "Microsoft .NET Core 1.0.1 - SDK Preview 4 (x64)"
 uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x64) - 14.10.24728"
