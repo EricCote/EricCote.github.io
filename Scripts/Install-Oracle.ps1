@@ -27,7 +27,7 @@ $sourceOracle = "http://download.oracle.com/otn/nt/oracle11g/xe/OracleXE112_Win6
 $sourceOracle = "https://github.com/EricCote/EricCote.github.io/releases/download/v1.0/OracleXE112_Win64.zip";
 $sourceOracleDev="http://download.oracle.com/otn/java/sqldeveloper/sqldeveloper-4.1.5.21.78-x64.zip"
 $sourceOracleExamples="http://download.oracle.com/otn/nt/oracle11g/112010/win64_11gR2_examples.zip"
-$SourceODT="https://github.com/EricCote/EricCote.github.io/releases/download/v1.0/ODTforVS2015_121025.exe"
+$Sourceodt="https://github.com/EricCote/EricCote.github.io/releases/download/v1.0/ODTforVS2015_121025.exe"
 
 
 $oracleZip= ($dl + "OracleXE112_Win64.zip")
@@ -38,28 +38,23 @@ $oracleExemplesZip=($dl +"win64_11gR2_examples.zip")
 
 if (-not $Uninstall ) {
 
-    "Downloading..."
+    "Downloading...";
     if (-Not (Test-Path $oracleZip)) {
        Download-File $sourceOracle $oracleZip
     }
-
-    if (-Not (Test-Path $oracleOdt)) {
-       Download-File $SourceODT $oracleOdt
+    "50% downloaded";
+    if (-Not (Test-Path $oracleodt)) {
+       Download-File $SourceoDT $oracleodt
     }
-    "Downloaded"
+    "Downloaded";
 
   
-    #if (-Not (Test-Path $oracleExemplesZip)) {
-    #   Download-File $sourceOracleExamples $oracleExemplesZip
-    #}
 
 
 
-    #Add-Type -AssemblyName System.IO.Compression.FileSystem
-    #[System.IO.Compression.ZipFile]::ExtractToDirectory($oracleZip, $dl )
-    #[System.IO.Compression.ZipFile]::ExtractToDirectory($oracleDevZip, "c:\oraclexe\" )
-    #[System.IO.Compression.ZipFile]::ExtractToDirectory($oracleExemplesZip, "c:\oraclexe\" )
-  
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($oracleZip, $dl )
+
     "Installing..."                                            
     & ($dl + "DISK1\setup.exe")  /s /f1"$dl\disk1\response\OracleXE-Install.iss" /f2"$dl\setup.log" | out-null
     "Installed"
