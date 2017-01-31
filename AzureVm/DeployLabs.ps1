@@ -43,7 +43,7 @@ $createFormulaTemplate="https://raw.githubusercontent.com/Azure/azure-devtestlab
 
 $createLab= "C:\code\EricCote.github.io\AzureVm\template.json"
 $createFormula="C:\code\EricCote.github.io\AzureVm\FormulaTemplate.json"
-$deployVm="C:\code\EricCote.github.io\AzureVm\DeployVm.json"
+$deployVm="C:\code\EricCote.github.io\AzureVm\deployvm.json"
 
 New-AzureRmResourceGroup -Name "monCoursWebApi2" -Location "Canada East"
 
@@ -70,9 +70,9 @@ New-AzureRmResourceGroupDeployment -name "CoursWebApi99" `                     
                                    -formulaName "win10Formula" `
                                    -existingLabName "CoursApi"
                                   
-New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName "monCoursWebApi2" `
+New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName "CoursApiRG867188" `
                                    -TemplateFile $deployVm `
-                                   -newVMName "CoursApi" `
+                                   -newVMName "CoursApi0" `
                                    -labName "CoursApi" `
                                    -numberOfInstances 3
 
@@ -81,15 +81,23 @@ New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                     
     $labStorageAccountName = $labProperties['defaultStorageAccount']
 
 
+    #Generaliser machine
+    Set-AzureRmVm -ResourceGroupName coursapi2303488234000 -Name CoursApi3 -Generalized
+
+    #verifier Generalisation
+$vm = Get-AzureRmVM -ResourceGroupName coursapi2303488234000 -Name CoursApi3  -Status
+$vm.Statuses
+
+#copier vhd
+Save-AzureRmVMImage -ResourceGroupName coursapi2303488234000 -Name CoursApi3 `
+     -DestinationContainerName mesimages -VHDNamePrefix eric `
+     -Path C:\code\Filename456.json
 
 
+AzCopy /Source:https://myaccount-secondary.blob.core.windows.net/mynewcontainer /Dest:C:\myfolder /SourceKey:key /Pattern:abc.txt
 
 
-
-
-
-
-
+     Get-AzureRMVMImage
     $lab = Get-AzureRmResource -ResourceId ('subscriptions/293da491-699f-4085-a089-ac26c94b68d2/resourceGroups/monCoursWebApi2/providers/Microsoft.DevTestLab/labs/coursapi')
 
 # Get the VMs from that lab.
