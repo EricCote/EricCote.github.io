@@ -1,238 +1,235 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "type": "string"
+        "labs_coursapi_name": {
+            "defaultValue": "coursapi",
+            "type": "String"
         },
-        "virtualMachineName": {
-            "type": "string"
+        "vaults_coursApi7256_name": {
+            "defaultValue": "coursApi",
+            "type": "String"
         },
-        "virtualMachineSize": {
-            "type": "string"
+        "virtualNetworks_DtlcoursApi_name": {
+            "defaultValue": "DtlcoursApi",
+            "type": "String"
         },
-        "adminUsername": {
-            "type": "string"
+        "storageAccounts_acoursapi8952_name": {
+            "defaultValue": "acoursapi",
+            "type": "String"
         },
-        "storageAccountName": {
-            "type": "string"
+        "storageAccounts_dcoursapi6931_name": {
+            "defaultValue": "dcoursapi",
+            "type": "String"
         },
-        "virtualNetworkName": {
-            "type": "string"
+        "storageAccounts_dpcoursapi4890_name": {
+            "defaultValue": "dpcoursapi",
+            "type": "String"
         },
-        "networkInterfaceName": {
-            "type": "string"
+        "artifactsources_public_repo_name": {
+            "defaultValue": "coursapi/public repo",
+            "type": "String"
         },
-        "networkSecurityGroupName": {
-            "type": "string"
+        "schedules_labvmsshutdown_name": {
+            "defaultValue": "coursapi/labvmsshutdown",
+            "type": "String"
         },
-        "adminPassword": {
-            "type": "securestring"
-        },
-        "storageAccountType": {
-            "type": "string"
-        },
-        "addressPrefix": {
-            "type": "string"
-        },
-        "subnetName": {
-            "type": "string"
-        },
-        "subnetPrefix": {
-            "type": "string"
-        },
-        "publicIpAddressName": {
-            "type": "string"
-        },
-        "publicIpAddressType": {
-            "type": "string"
-        },
-        "ex0_vmName": {
-            "type": "string"
-        },
-        "ex0_location": {
-            "type": "string"
-        },
-        "ex0_fileUris": {
-            "type": "string"
+        "virtualnetworks_dtlcoursapi_name_1": {
+            "defaultValue": "coursapi/dtlcoursapi",
+            "type": "String"
         }
     },
-    "variables": {
-        "vnetId": "[resourceId('win10vm','Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
-    },
+    "variables": {},
     "resources": [
         {
-            "name": "[parameters('virtualMachineName')]",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2015-06-15",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'))]",
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
-            ],
+           "type": "microsoft.devtestlab/labs",
+            "name": "[parameters('labs_coursapi_name')]",
+            "apiVersion": "2016-05-15",
+            "location": "canadaeast",
             "properties": {
-                "osProfile": {
-                    "computerName": "[parameters('virtualMachineName')]",
-                    "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
-                },
-                "hardwareProfile": {
-                    "vmSize": "[parameters('virtualMachineSize')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "MicrosoftVisualStudio",
-                        "offer": "Windows",
-                        "sku": "Windows-10-N-x64",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "name": "[parameters('virtualMachineName')]",
-                        "vhd": {
-                            "uri": "[concat(concat(reference(resourceId('win10vm', 'Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2015-06-15').primaryEndpoints['blob'], 'vhds/'), parameters('virtualMachineName'), '2016923103314.vhd')]"
-                        },
-                        "createOption": "fromImage"
-                    },
-                    "dataDisks": []
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Microsoft.CustomScriptExtension-20160923103219",
-            "apiVersion": "2015-01-01",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "incremental",
-                "templateLink": {
-                    "uri": "https://gallery.azure.com/artifact/20151001/Microsoft.CustomScriptExtension-arm.2.0.50/Artifacts/MainTemplate.json"
-                },
-                "parameters": {
-                    "vmName": {
-                        "value": "[parameters('ex0_vmName')]"
-                    },
-                    "location": {
-                        "value": "[parameters('ex0_location')]"
-                    },
-                    "fileUris": {
-                        "value": "[parameters('ex0_fileUris')]"
-                    }
-                }
+                "defaultStorageAccount":  "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dcoursapi6931_name'))]",
+                "defaultPremiumStorageAccount": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dpcoursapi4890_name'))]",
+                "artifactsStorageAccount":  "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_acoursapi8952_name'))]",
+                "vaultName": "[resourceId('Microsoft.KeyVault/vaults', parameters('vaults_coursApi7256_name'))]",
+                "labStorageType": "Standard"
+               
             },
+            "resources": [],
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('vaults_coursApi7256_name'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_acoursapi8952_name'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dcoursapi6931_name'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_dpcoursapi4890_name'))]"
             ]
         },
         {
-            "name": "[parameters('storageAccountName')]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2015-06-15",
-            "location": "[parameters('location')]",
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('vaults_coursApi7256_name')]",
+            "apiVersion": "2015-06-01",
+            "location": "canadaeast",
+            "tags": {
+                "CreatedBy": "DevTestLabs"
+            },
             "properties": {
-                "accountType": "[parameters('storageAccountType')]"
-            }
-        },
-        {
-            "name": "[parameters('virtualNetworkName')]",
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2016-09-01",
-            "location": "[parameters('location')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('addressPrefix')]"
-                    ]
+                "sku": {
+                    "family": "A",
+                    "name": "standard"
                 },
-                "subnets": [
-                    {
-                        "name": "[parameters('subnetName')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnetPrefix')]"
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "[parameters('networkInterfaceName')]",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2016-09-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
-                "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
-            ],
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[variables('subnetRef')]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId('win10vm','Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
-                            }
+               "tenantId": "e0072463-2165-47e0-b1ec-363866202ac5",
+               "accessPolicies": [
+                    {   
+                        "tenantId": "e0072463-2165-47e0-b1ec-363866202ac5",
+                        "objectId": "8e9b622e-8af1-4163-b8d0-12c580d7f145",
+                        "permissions": {
+                            
+                            "secrets": [
+                                "all"
+                            ]
                         }
                     }
                 ],
-                "networkSecurityGroup": {
-                    "id": "[resourceId('win10vm', 'Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
-                }
-            }
+                "enabledForDeployment": true
+            },
+            "resources": [],
+            "dependsOn": []
         },
         {
-            "name": "[parameters('publicIpAddressName')]",
-            "type": "Microsoft.Network/publicIpAddresses",
-            "apiVersion": "2016-09-01",
-            "location": "[parameters('location')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworks_DtlcoursApi_name')]",
+            "apiVersion": "2016-03-30",
+            "location": "canadaeast",
+           
             "properties": {
-                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('virtualMachineName')]"
-                }
-            }
-        },
-        {
-            "name": "[parameters('networkSecurityGroupName')]",
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2016-09-01",
-            "location": "[parameters('location')]",
-            "properties": {
-                "securityRules": [
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/20"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": []
+                },
+                "subnets": [
                     {
-                        "name": "default-allow-rdp",
+                        "name": "[concat(parameters('virtualNetworks_DtlcoursApi_name'),'Subnet')]",
                         "properties": {
-                            "priority": 1000,
-                            "sourceAddressPrefix": "*",
-                            "protocol": "TCP",
-                            "destinationPortRange": "3389",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*"
+                            "addressPrefix": "10.0.0.0/20"
                         }
                     }
                 ]
-            }
+            },
+            "resources": [],
+            "dependsOn": []
+        },
+        { "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[parameters('storageAccounts_acoursapi8952_name')]",
+            "apiVersion": "2016-01-01",
+            "location": "canadaeast",
+            
+            "properties": {},
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+           "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[parameters('storageAccounts_dcoursapi6931_name')]",
+            "apiVersion": "2016-01-01",
+            "location": "canadaeast",
+           
+            "properties": {},
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Premium_LRS",
+                "tier": "Premium"
+            },
+            "kind": "Storage",
+            "name": "[parameters('storageAccounts_dpcoursapi4890_name')]",
+            "apiVersion": "2016-01-01",
+            "location": "canadaeast",
+          
+            "properties": {},
+            "resources": [],
+            "dependsOn": []
+        },
+        {
+          "type": "microsoft.devtestlab/labs/artifactsources",
+            "name": "[parameters('artifactsources_public_repo_name')]",
+            "apiVersion": "2016-05-15",
+            "properties": {
+                "displayName": "Public Repo",
+                "uri": "https://github.com/Azure/azure-devtestlab.git",
+                "sourceType": "GitHub",
+                "folderPath": "/Artifacts",
+                "branchRef": "",
+                "status": "Enabled",
+                "provisioningState": "Succeeded"
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('microsoft.devtestlab/labs', parameters('labs_coursapi_name'))]"
+            ]
+        },
+        {
+           "type": "microsoft.devtestlab/labs/schedules",
+            "name": "[parameters('schedules_labvmsshutdown_name')]",
+            "apiVersion": "2016-05-15",
+            "location": "canadaeast",
+            "properties": {
+                "status": "Enabled",
+                "taskType": "LabVmsShutdownTask",
+                "dailyRecurrence": {
+                    "time": "1900"
+                },
+                "timeZoneId": "Eastern Standard Time",
+                "provisioningState": "Succeeded",
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('microsoft.devtestlab/labs', parameters('labs_coursapi_name'))]"
+            ]
+        },
+        {
+           "type": "microsoft.devtestlab/labs/virtualnetworks",
+            "name": "[parameters('virtualnetworks_dtlcoursapi_name_1')]",
+            "apiVersion": "2016-05-15",
+            "properties": {
+                "allowedSubnets": [
+                    {
+                        "resourceId": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DtlcoursApi_name')), '/subnets/DtlcoursApiSubnet')]",
+                        "labSubnetName": "DtlcoursApiSubnet",
+                        "allowPublicIp": "Allow"
+                    }
+                ],
+                "externalProviderResourceId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DtlcoursApi_name'))]",
+                "subnetOverrides": [
+                    {
+                        "resourceId": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DtlcoursApi_name')), '/subnets/DtlcoursApiSubnet')]",
+                        "labSubnetName": "DtlcoursApiSubnet",
+                        "useInVmCreationPermission": "Allow",
+                        "usePublicIpAddressPermission": "Allow"
+                    }
+                ],
+                "provisioningState": "Succeeded"
+         
+            },
+            "resources": [],
+            "dependsOn": [
+                "[resourceId('microsoft.devtestlab/labs', parameters('labs_coursapi_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DtlcoursApi_name'))]"
+            ]
         }
-    ],
-    "outputs": {
-        "adminUsername": {
-            "type": "string",
-            "value": "[parameters('adminUsername')]"
-        }
-    }
+    ]
 }
