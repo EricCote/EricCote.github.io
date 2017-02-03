@@ -1,14 +1,13 @@
-﻿Install-Module AzureRM
+﻿Get-Module -ListAvailable Azure*
+Set-ExecutionPolicy -ExecutionPolicy bypass -Scope Process
+
+Install-Module AzureRM -AllowClobber
 Import-Module azurerm
 
 $PSVersionTable.PSVersion
 
-Get-Module -ListAvailable Azure*
-Set-ExecutionPolicy -ExecutionPolicy bypass -Scope Process
 
-Install-AzureRM
- Import-AzureRM
- update-azurerm
+
 
 Import-Module AzureRM
 
@@ -44,6 +43,7 @@ $createFormulaTemplate="https://raw.githubusercontent.com/Azure/azure-devtestlab
 $createLab= "C:\code\EricCote.github.io\AzureVm\template.json"
 $createFormula="C:\code\EricCote.github.io\AzureVm\FormulaTemplate.json"
 $deployVm="C:\code\EricCote.github.io\AzureVm\deployvm.json"
+$deployCustomVm="C:\code\EricCote.github.io\AzureVm\deploycustomvm.json"
 
 New-AzureRmResourceGroup -Name "monCoursWebApi2" -Location "Canada East"
 
@@ -77,6 +77,16 @@ New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                     
                                    -numberOfInstances 3
 
 
+New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName "CoursApiRG867188" `
+                                   -TemplateFile $deployCustomVm `
+                                   -newVMName "Fire0" `
+                                   -labName "CoursApi" `
+                                   -numberOfInstances 3
+
+
+
+
+
  $labProperties = (Get-AzureRmResource -ResourceName CoursApi -ResourceType "microsoft.devtestlab/labs" -ResourceGroupName CoursWebApi).Properties
     $labStorageAccountName = $labProperties['defaultStorageAccount']
 
@@ -94,8 +104,12 @@ Save-AzureRmVMImage -ResourceGroupName coursapi2303488234000 -Name CoursApi3 `
      -Path C:\code\Filename456.json
 
 
-AzCopy /Source:https://myaccount-secondary.blob.core.windows.net/mynewcontainer /Dest:C:\myfolder /SourceKey:key /Pattern:abc.txt
-
+& "C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\AzCopy.exe" `
+       /Source:https://dcoursapi6131.blob.core.windows.net/system/Microsoft.Compute/Images/mesimages/ `
+       /Dest:https://dcoursapi6131.blob.core.windows.net/uploads `
+       /SourceKey:5sHPAWRMy8Rjaip6e4bsTalWFYZCDBmf37+85yY/GZ/NKgfG1aADrazaHcObb8tbExnvCJoujlKIr3xFzsAu3A== `
+       /DestKey:5sHPAWRMy8Rjaip6e4bsTalWFYZCDBmf37+85yY/GZ/NKgfG1aADrazaHcObb8tbExnvCJoujlKIr3xFzsAu3A== `
+       /pattern:"eric-osDisk.7079f5a9-d15a-44a0-8d9d-bf8b1a6a97af.vhd"
 
      Get-AzureRMVMImage
     $lab = Get-AzureRmResource -ResourceId ('subscriptions/293da491-699f-4085-a089-ac26c94b68d2/resourceGroups/monCoursWebApi2/providers/Microsoft.DevTestLab/labs/coursapi')

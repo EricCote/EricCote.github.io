@@ -36,9 +36,10 @@ function List-Programs
     ? DisplayName -like $name ;
   $programs2 = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | `
         Select-Object DisplayName, UninstallString | `
-        ? DisplayName -like $name; 
+        ? DisplayName -like $name;
 
-  return $programs+$programs2
+  $myList= if ($programs2)  {$programs+$programs2} else {$programs}
+  return $myList
         
 }
 
@@ -77,11 +78,15 @@ function Uninstall-Program
         % -Process {  
                 $unstr = $_.UninstallString.Replace("  "," ");
                 $separatorPos = if ($unstr.LastIndexOf('"') -ge 0) {$unstr.LastIndexOf('"') + 1 } else {$unstr.IndexOf(" ")};
-                $items= "", ""
+                $separatorPos = if ($unstr.ToLower().StartsWith("c:\program")) {$unstr.LastIndexOf(".exe") + 4} else {$separatorPos};
+                $items= "", "";
                 $items[0] = $unstr.Substring(0,$separatorPos);
                 if ($separatorPos + 1 -lt $unstr.Length) {
-                $items[1] = $unstr.Substring($separatorPos + 1); };
+                    $items[1] = $unstr.Substring($separatorPos + 1); 
+                };
+ 
                 $items[1] = $items[1].TrimStart(" ");
+               
                 $items[0]= $items[0].Replace("`"", "") ;
                 $items[1]= $items[1].Replace("/I","/x"); 
                 & ($items[0]) $items[1] /passive $skip| Out-Null;
@@ -136,30 +141,56 @@ Download-File $WebSource $destination;
 }
 else
 {
-& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" /uninstall   | Out-Null
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" /uninstall /?  | Out-Null
 #& $destination /Uninstall /passive  | Out-Null
 #& $destination /Uninstall /Force /passive  | Out-Null
 
-uninstall-program "Windows Software Development Kit - Windows 10.0.14393.33"
-uninstall-program "Microsoft Visual Studio Code"
-uninstall-program "Microsoft Identity Extensions"
-uninstall-program "Workflow Manager Client 1.0" 
-uninstall-program "Windows SDK AddOn"
-uninstall-program "Microsoft .NET Framework 4.6.2 SDK"
-uninstall-program "Microsoft .NET Framework 4.6.2 Targeting Pack"  #(inverse???)
-uninstall-program "Microsoft Visual Studio 2017 Tools for Unity"
-uninstall-program "Git version 2.10.2"
-uninstall-program "Xamarin"
+& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" uninstall --passive --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise"
 
-uninstall-program "Microsoft .NET Core 1.0.1 - SDK Preview 4 (x64)"
-uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x64) - 14.10.24728"
-uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x86) - 14.10.24728"
+uninstall-program "Windows Software Development Kit - Windows 10.0.14393.795"
+uninstall-program "Windows Software Development Kit - Windows 10.0.10586.212"
+uninstall-program "Windows SDK AddOn"
+Uninstall-Program "Microsoft Visual Studio 2010 Tools for Office Runtime (x64)"
+uninstall-program "Microsoft .NET Core 1.0.3 - SDK RC 3 (x64)"
+uninstall-program "Microsoft .NET Framework 4.6.2 SDK" 
+uninstall-program "Microsoft .NET Framework 4.6.2 Targeting Pack"
+
+
+
+uninstall-program "Xamarin" 
+uninstall-program "Windows 10 for Mobile Image - 10.0.14393.0" 
+uninstall-program "Windows Mobile Connectivity Tools 10.0.10240.0 - Desktop x86" 
+
+uninstall-program "Gtk# for .Net 2.12.26" 
+uninstall-program "Java SE Development Kit 8 Update 92" 
+ 
+uninstall-program "Microsoft Identity Extensions" 
+uninstall-program "Workflow Manager Client 1.0" 
+
+uninstall-program "Universal CRT Extension SDK"
+uninstall-program "Universal CRT Headers Libraries and Sources"  
+
+
+
+
+
+#hard
+Uninstall-Program "Microsoft Visual Studio 2017"
+uninstall-program "Android SDK Tools"
+
+uninstall-program "Cocos Creator"
+uninstall-program "Unity"
+uninstall-program "Microsoft Visual Studio 2017 Tools for Unity"
+uninstall-program "Epic Games Launcher"
+uninstall-program "Git version *"
+
+
+uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x64) - 14.10.24911"
+uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x86) - 14.10.24911"
 
 uninstall-program "Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.21005"
 uninstall-program "Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.21005"
-        
-
-
+uninstall-program "Microsoft Visual C++ 2010  x64 Redistributable - 10.0.30319"
 
        
 #uninstall-program "Microsoft SQL Server Data Tools - enu (14.0.60519.0)"                     
@@ -196,7 +227,7 @@ $Acl = Get-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_c
 $Ar = New-Object  system.security.accesscontrol.filesystemaccessrule("BUILTIN\users","FullControl","Allow")
 $Acl.AddAccessRule($Ar)
 Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_client.xml" $Acl
-Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_extended.xml" $Acl
+Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_extended.xml" $Acl 
 
 
 
