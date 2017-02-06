@@ -824,8 +824,6 @@ switch ($step)
      }
         
 
-          
-
         "Install Browsers"
         & .\Install-Chrome.ps1 $dl
         & .\Install-Firefox.ps1 $dl
