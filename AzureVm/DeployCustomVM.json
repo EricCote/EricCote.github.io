@@ -3,12 +3,16 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "newVMName": {
-      "type": "string",
-      "defaultValue": "fire2"
+      "type": "string"
     },
     "labName": {
+      "type": "string"
+    },
+    "existingCustomImageId": {
       "type": "string",
-      "defaultValue": "CoursApi"
+      "metadata": {
+        "description": "The id of an existing custom image which will be used to create the new vm. The specified image must exist in the lab (identified via the 'existingLabName' parameter)."
+      }
     },
     "numberOfInstances": {
       "type": "int",
@@ -32,9 +36,9 @@
     }
   },
   "variables": {
+    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
     "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
     "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('labName'), variables('labVirtualNetworkName'))]",
-    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
     "vmId": "[resourceId ('Microsoft.DevTestLab/labs/virtualmachines', parameters('labName'), parameters('newVMName'))]",
     "vmName": "[concat(parameters('labName'), '/', parameters('newVMName'))]"
   },
@@ -44,32 +48,32 @@
       "type": "Microsoft.DevTestLab/labs/virtualmachines",
       "name": "[concat(variables('vmName'),copyindex())]",
       "location": "[resourceGroup().location]",
+      "tags": {
+
+        "AutoStartOn": "true"
+
+      },
       "copy": {
         "name": "virtualMachineLoop",
         "count": "[parameters('numberOfInstances')]"
       },
       "properties": {
         "labVirtualNetworkId": "[variables('labVirtualNetworkId')]",
-        "notes": "win10WithFirefox",
-        "customImageId": "/subscriptions/293da491-699f-4085-a089-ac26c94b68d2/resourcegroups/coursapirg867188/providers/microsoft.devtestlab/labs/coursapi/customimages/win10withfirefox",
+        "notes": "Windows 10 Enterprise N",
+        "customImageId": "[parameters('existingCustomImageId')]",
         "size": "[parameters('size')]",
         "userName": "[parameters('userName')]",
         "password": "[parameters('password')]",
         "isAuthenticationWithSshKey": false,
+       // "artifacts": [
+       //   {
+       //     "artifactId": "[resourceId('Microsoft.DevTestLab/labs/artifactSources/artifacts', parameters('labName'), 'public repo', 'windows-chrome')]"
+       //   }
+       // ],
         "labSubnetName": "[variables('labSubnetName')]",
-        "disallowPublicIpAddress": true,
+        "disallowPublicIpAddress": false,
         "storageType": "Standard",
-        "allowClaim": true,
-        "networkInterface": {
-          "sharedPublicIpAddressConfiguration": {
-            "inboundNatRules": [
-              {
-                "transportProtocol": "tcp",
-                "backendPort": 3389
-              }
-            ]
-          }
-        }
+        "allowClaim": true
       }
     }
   ],

@@ -1,16 +1,17 @@
 ﻿Get-Module -ListAvailable Azure*
-Set-ExecutionPolicy -ExecutionPolicy bypass -Scope Process
 
 Install-Module AzureRM -AllowClobber
 Import-Module azurerm
 
 $PSVersionTable.PSVersion
 
+###########################
+# start of script
 
-
-
+Set-ExecutionPolicy -ExecutionPolicy bypass -Scope Process
 Import-Module AzureRM
 
+############################
 
 # To log in to Azure Resource Manager
 Login-AzureRmAccount
@@ -23,7 +24,7 @@ Get-AzureRmSubscription
 
 # To select a default subscription for your current session.
 # This is useful when you have multiple subscriptions.
-Get-AzureRmSubscription -SubscriptionName "Msdn2 sub" | Select-AzureRmSubscription
+Get-AzureRmSubscription -SubscriptionName "Msdn3 sub" | Select-AzureRmSubscription
 
 # View your current Azure PowerShell session context
 # This session state is only applicable to the current session and will not affect other sessions
@@ -31,7 +32,7 @@ Get-AzureRmContext
 
 Get-AzureRmStorageAccount | Get-AzureStorageContainer | Get-AzureStorageBlob
 
-
+$vmUsername="afi"
 $PlainPassword = "afi12345678!"
 $SecurePassword = $PlainPassword | ConvertTo-SecureString -AsPlainText -Force
 
@@ -39,20 +40,47 @@ $SecurePassword = $PlainPassword | ConvertTo-SecureString -AsPlainText -Fo
 $CreateLabTemplate = "https://raw.githubusercontent.com/Azure/azure-devtestlab/master/ARMTemplates/101-dtl-create-lab/azuredeploy.json"
 $createVMTemplate="https://raw.githubusercontent.com/Azure/azure-devtestlab/master/ARMTemplates/101-dtl-create-vm-username-pwd-galleryimage/azuredeploy.json"
 $createFormulaTemplate="https://raw.githubusercontent.com/Azure/azure-devtestlab/master/ARMTemplates/201-dtl-create-formula/azuredeploy.json"
+$createImageFromVHD= "https://raw.githubusercontent.com/Azure/azure-devtestlab/master/ARMTemplates/201-dtl-create-customimage-from-vhd/azuredeploy.json"  
 
 $createLab= "C:\code\EricCote.github.io\AzureVm\template.json"
 $createFormula="C:\code\EricCote.github.io\AzureVm\FormulaTemplate.json"
 $deployVm="C:\code\EricCote.github.io\AzureVm\deployvm.json"
-$deployCustomVm="C:\code\EricCote.github.io\AzureVm\deploycustomvm.json"
+$deployCustomVm="C:\code\EricCote.github.io\AzureVm\deployCustomVm.json"
 
-New-AzureRmResourceGroup -Name "monCoursWebApi2" -Location "Canada East"
 
+$groupName="CoursWebApi"
+$location="East US"
+$labName="WebApi"
+$imageName= "Windows10WithChrome"
+$vmPrefix="webApi0"
+
+ 
+
+New-AzureRmResourceGroup -Name $groupName -Location $location
+
+
+#On installe un lab vierge
 New-AzureRmResourceGroupDeployment -name "CoursWebApi12345" `
-                                   -ResourceGroupName "monCoursWebApi2" `
+                                   -ResourceGroupName $groupName `
                                    -TemplateFile $CreateLabTemplate `
-                                   -newLabName "CoursApi"
+                                   -newLabName $labName
 
-New-AzureRmResourceGroupDeployment -name "CoursWebApi99" `                                   -ResourceGroupName "monCoursWebApi2" `
+#Règle de shutdown
+set-AzureRmDtlAutoShutdownPolicy -LabName $labName `
+                                 -ResourceGroupName $groupName `
+                                 -Enable  `
+                                 -Time "6:00 PM-5:00" 
+                                 
+
+#Règle de start automatique
+set-AzureRmDtlAutoStartPolicy    -LabName $labName `
+                                 -ResourceGroupName $groupName `
+                                 -Enable  `
+                                 -Time "8:00 AM-5:00" -Days Monday, Tuesday, wednesday, Thursday, Friday
+
+
+#on saute
+New-AzureRmResourceGroupDeployment -name "CoursWebApi99" `                                   -ResourceGroupName $groupName `
                                    -TemplateUri $createVMTemplate `
                                    -newVMName "coursWeb01" `
                                    -existingLabName "CoursApi" `
@@ -62,39 +90,132 @@ New-AzureRmResourceGroupDeployment -name "CoursWebApi99" `                     
                                    -osType "Windows" `
                                    -version "50.2.2" `
                                    -newVMSize "Standard_DS2_V2" `
-                                   -userName "afi" `
+                                   -userName $vmUsername `
                                    -password $SecurePassword
 
-New-AzureRmResourceGroupDeployment -name "CoursWebApi99" `                                   -ResourceGroupName "monCoursWebApi" `
+
+#On créé une formule nommée Win10Formula
+New-AzureRmResourceGroupDeployment -name "CoursWebApi99" `                                   -ResourceGroupName $groupName `
                                    -TemplateFile $createFormula `
                                    -formulaName "win10Formula" `
-                                   -existingLabName "CoursApi"
-                                  
-New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName "CoursApiRG867188" `
+                                   -existingLabName $labName
+
+#On instancie une machine                                 
+New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName $groupName `
                                    -TemplateFile $deployVm `
                                    -newVMName "CoursApi0" `
-                                   -labName "CoursApi" `
-                                   -numberOfInstances 3
+                                   -labName $labName `
+                                   -numberOfInstances 1 `
+                                   -password $SecurePassword `
+                                   -userName $vmUsername
+
+#Creation du Custom Image à partir du vhd
+New-AzureRmResourceGroupDeployment -name "CoursWebApi977" `                                   -ResourceGroupName $groupName `
+                                   -TemplateUri $createImageFromVHD `
+                                   -existingLabName $labName `
+                                   -existingVhdUri $vhdUrl `
+                                   -imageName $imageName `
+                                   -imageDescription  "Windows 10 avec Chrome.  C'est simple!"
+
+                                 
 
 
-New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName "CoursApiRG867188" `
+#deploy 3 instances from an image
+
+$imageRef = Get-AzureRMResource  -ResourceType 'Microsoft.DevTestLab/labs/customImages' -ApiVersion '2016-05-15'  -ResourceName ($labName + "/" + $imageName) -ResourceGroupName $groupName
+                     
+New-AzureRmResourceGroupDeployment -name "CoursWebApi97" `                                   -ResourceGroupName $groupName `
                                    -TemplateFile $deployCustomVm `
-                                   -newVMName "Fire0" `
-                                   -labName "CoursApi" `
-                                   -numberOfInstances 3
+                                   -existingCustomImageId $imageRef.resourceId `
+                                   -newVMName $vmPrefix
+                                   -labName  $labName   `
+                                   -numberOfInstances 3 `
+                                   -userName $vmUsername `
+                                   -password $SecurePassword
 
 
 
 
 
- $labProperties = (Get-AzureRmResource -ResourceName CoursApi -ResourceType "microsoft.devtestlab/labs" -ResourceGroupName CoursWebApi).Properties
-    $labStorageAccountName = $labProperties['defaultStorageAccount']
+
+#Get the LAb
+$labs = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' -ResourceNameEquals $labName
+$lab=$labs[0]
+
+#set the destination folder to the lab's "default storage" (the upload directory)
+$properties = (Get-AzureRMResource  -ResourceType 'Microsoft.DevTestLab/labs'  -ResourceName $lab.ResourceName -ResourceGroupName $lab.ResourceGroupName -WarningAction SilentlyContinue).Properties
+$labStorageAccountId = $properties.DefaultStorageAccount.Split('/')
+$labStorageAccountName =  $labStorageAccountId[$labStorageAccountId.Length-1]
+$labStorageAccountKey = (Get-AzureRMStorageAccountKey -Name $labStorageAccountName -ResourceGroupName $lab.ResourceGroupName)[0].Value 
+
+#Get the first machine of the lab, this is going to be our source
+$LabVmToCapture = Get-AzureRmResource  -ResourceType 'Microsoft.DevTestLab/labs/virtualmachines' -ResourceName $labName -ResourceGroupName $GroupName | select -first 1
+
+$vmToCapture = Find-AzureRmResource -ResourceType 'Microsoft.Compute/virtualMachines' -ResourceNameEquals  $LabVmToCapture.Name | select -first 1
+$properties = (Get-AzureRMResource  -ResourceType 'Microsoft.Compute/virtualMachines' -ResourceName $vmToCapture.ResourceName -ResourceGroupName $vmToCapture.ResourceGroupName).Properties 
+
+#get the location of the source VHD to copy
+$sourceUri = $properties.storageProfile.osDisk.vhd.uri
+$uri = New-Object System.Uri($sourceUri)
+$vmStorageAccountName = $uri.Host.Split('.')[0]
+$storageAccounts = Find-AzureRmResource -ResourceType 'Microsoft.Storage/storageAccounts'  
+
+#let's find the not only the right account name, but also the right resource group (these are dynamic for labs)
+foreach($storageAccount in $storageAccounts){
+  if($storageAccount.ResourceName -eq $vmStorageAccountName){
+    $vmStorageAccountRG = $storageAccount.ResourceGroupName
+  }
+}        
+
+#let's get the source key
+$vmStorageAccountKey = (Get-AzureRMStorageAccountKey -Name $vmStorageAccountName -ResourceGroupName $vmStorageAccountRG)[0].Value
+
+#let's set the context (connection) for the source and destination with the  right keys
+$srcContext = New-AzureStorageContext –StorageAccountName $vmStorageAccountName -StorageAccountKey $vmStorageAccountKey 
+$destContext = New-AzureStorageContext –StorageAccountName $labStorageAccountName -StorageAccountKey $labStorageAccountKey 
+ 
+#this can have a better name
+$vhdFileName='Win10WithChrome.vhd'
+
+$vhdUrl = $destContext.BlobEndPoint + "uploads/" + $vhdFileName
+
+#start the copy
+$copyHandle = Start-AzureStorageBlobCopy -srcUri $sourceUri -SrcContext $srcContext -DestContainer 'uploads' -DestBlob $vhdFileName -DestContext $destContext -Force
+
+Write-Host "Copy started..."
+$copyStatus = $copyHandle | Get-AzureStorageBlobCopyState 
+
+While($copyStatus.Status -eq "Pending"){
+  $copyStatus = $copyHandle | Get-AzureStorageBlobCopyState 
+  $perComplete = ($copyStatus.BytesCopied/$copyStatus.TotalBytes)*100
+  Write-Progress -Activity "Copying blob..." -status "Percentage Complete" -percentComplete "$perComplete"
+  Start-Sleep 10
+}
+
+if($copyStatus.Status -eq "Success")
+{
+  Write-Host "$vhdFileName successfully copied to Lab $labName "
+}
 
 
-    #Generaliser machine
-    Set-AzureRmVm -ResourceGroupName coursapi2303488234000 -Name CoursApi3 -Generalized
+#let's delete the source machine
+Remove-AzureRmResource -ResourceId $LabVmToCapture.ResourceId -Force
 
-    #verifier Generalisation
+
+######################################3
+
+$labProperties = (Get-AzureRmResource -ResourceName $labName -ResourceType "microsoft.devtestlab/labs" -ResourceGroupName $groupName).Properties
+$labStorageAccountName = $labProperties.defaultStorageAccount
+
+
+
+
+
+
+#Generaliser machine
+Set-AzureRmVm -ResourceGroupName coursapi2303488234000 -Name CoursApi3 -Generalized
+
+#verifier Generalisation
 $vm = Get-AzureRmVM -ResourceGroupName coursapi2303488234000 -Name CoursApi3  -Status
 $vm.Statuses
 
@@ -112,11 +233,16 @@ Save-AzureRmVMImage -ResourceGroupName coursapi2303488234000 -Name CoursApi3 `
        /pattern:"eric-osDisk.7079f5a9-d15a-44a0-8d9d-bf8b1a6a97af.vhd"
 
      Get-AzureRMVMImage
-    $lab = Get-AzureRmResource -ResourceId ('subscriptions/293da491-699f-4085-a089-ac26c94b68d2/resourceGroups/monCoursWebApi2/providers/Microsoft.DevTestLab/labs/coursapi')
+
+
+##### DELETE  VM and labs
+
+$labs = Find-AzureRmResource -ResourceType 'Microsoft.DevTestLab/labs' -ResourceNameContains $labName
+$lab=$labs[0]
 
 # Get the VMs from that lab.
 $labVMs = Get-AzureRmResource | Where-Object { 
-          $_.ResourceType -eq 'microsoft.devtestlab/labs/virtualmachines' -and
+          $_.ResourceType -eq 'microsoft.devtestlab/labs/virtualmachines'  -and
           $_.ResourceName -like "$($lab.ResourceName)/*"}
 
 # Delete the VMs.
@@ -125,5 +251,8 @@ foreach($labVM in $labVMs)
     Remove-AzureRmResource -ResourceId $labVM.ResourceId -Force
 }
 
+#Delete lab
+Remove-AzureRmResource -ResourceId $lab.ResourceId -Force
 
-Remove-AzureRmResourceGroup -Name "CoursWebApi" -force
+#delete res group
+Remove-AzureRmResourceGroup -Name $groupName -force

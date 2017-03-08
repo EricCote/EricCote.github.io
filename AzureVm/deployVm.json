@@ -32,9 +32,9 @@
     }
   },
   "variables": {
+    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
     "labSubnetName": "[concat(variables('labVirtualNetworkName'), 'Subnet')]",
     "labVirtualNetworkId": "[resourceId('Microsoft.DevTestLab/labs/virtualnetworks', parameters('labName'), variables('labVirtualNetworkName'))]",
-    "labVirtualNetworkName": "[concat('Dtl', parameters('labName'))]",
     "vmId": "[resourceId ('Microsoft.DevTestLab/labs/virtualmachines', parameters('labName'), parameters('newVMName'))]",
     "vmName": "[concat(parameters('labName'), '/', parameters('newVMName'))]"
   },
@@ -44,6 +44,11 @@
       "type": "Microsoft.DevTestLab/labs/virtualmachines",
       "name": "[concat(variables('vmName'),copyindex())]",
       "location": "[resourceGroup().location]",
+      "tags": {
+
+        "AutoStartOn": "true"
+
+      },
       "copy": {
         "name": "virtualMachineLoop",
         "count": "[parameters('numberOfInstances')]"
@@ -68,19 +73,9 @@
           }
         ],
         "labSubnetName": "[variables('labSubnetName')]",
-        "disallowPublicIpAddress": true,
+        "disallowPublicIpAddress": false,
         "storageType": "Standard",
-        "allowClaim": true,
-        "networkInterface": {
-          "sharedPublicIpAddressConfiguration": {
-            "inboundNatRules": [
-              {
-                "transportProtocol": "tcp",
-                "backendPort": 3389
-              }
-            ]
-          }
-        }
+        "allowClaim": true
       }
     }
   ],
