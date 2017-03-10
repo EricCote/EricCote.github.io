@@ -3,13 +3,11 @@
 [CmdletBinding()]
 Param
     ( 
-    [string]$Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
-    [switch] $Uninstall = $false 
+    [string]$Destination = (Join-Path  $env:USERPROFILE "downloads\"),
+    [switch] $Uninstall = $false
     )
 
 
-
-$dl=$Destination
 
 function Download-File
 {
@@ -95,21 +93,42 @@ function Uninstall-Program
     }
  }
 
+
+#https://aka.ms/vs/15/release/vs_Community.exe
+#https://aka.ms/vs/15/release/vs_Enterprise.exe
+#https://aka.ms/vs/15/release/vs_Professional.exe
+#https://aka.ms/vs/15/release/vs_TestProfessional.exe
+
+#VS 2017 Enterprise & Professional Valid Key
+#Enterprise: NJVYC-BMHX2-G77MM-4XJMR-6Q8QF
+#Professional: KBJFW-NXHK6-W4WJM-CRMQB-G3CDH
  
 #https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio
 
 
-$WebSource = "https://download.microsoft.com/download/D/1/F/D1F328D6-A080-4017-B125-138BA7344727/vs_Enterprise.exe";
-$destination = ($dl +  "vs_enterprise.exe");
+
+$WebSource = "https://aka.ms/vs/15/release/vs_Enterprise.exe";
+$dest = ($dl +  "vs_enterprise.exe");
 
 
 if (-not $Uninstall)
 {
-Download-File $WebSource $destination;
+Download-File $WebSource $dest;
 
-#& $destination install `
-#               --productid Microsoft.VisualStudio.Product.Enterprise `
-#               --add Microsoft.VisualStudio.Workload.NetWeb `
+& $dest  `
+               --channelid  VisualStudio.15.Release `
+               --productid Microsoft.VisualStudio.Product.Enterprise `
+               --add Microsoft.VisualStudio.Workload.NetWeb  `
+               --add Microsoft.VisualStudio.Workload.NetCoreTools `
+               --add Microsoft.VisualStudio.Workload.ManagedDesktop `
+               --add Microsoft.VisualStudio.Workload.Azure `
+               --add Microsoft.VisualStudio.Workload.Data `
+               --add Component.GitHub.VisualStudio `
+               --add Microsoft.NetCore.ComponentGroup.DevelopmentTools `
+               --add Microsoft.Net.Core.Component.SDK `
+               --add Microsoft.VisualStudio.Component.PowerShell.Tools `
+               --productKey NJVYC-BMHX2-G77MM-4XJMR-6Q8QF `
+               --includeRecommended --passive | Out-Null
 #               --add Microsoft.VisualStudio.Workload.NetCoreTools.Preview `
 #               --add Microsoft.VisualStudio.Component.SQL.CMDUtils `
 #               --add Microsoft.Component.NetFX.Core.Runtime `
@@ -117,23 +136,27 @@ Download-File $WebSource $destination;
 #               --passive | Out-Null
 
 
-& $destination  `
-               --productid Microsoft.VisualStudio.Product.Enterprise `
-               --all `
-               --passive | Out-Null
+
+# & "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\StorePID.exe" NJVYC-BMHX2-G77MM-4XJMR-6Q8QF 8860
 
 
-& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
-               --channelid VisualStudio.15.Release `
-               --productid Microsoft.VisualStudio.Product.Enterprise `
-               --add Microsoft.VisualStudio.Component.Azure.ServiceFabric.Tools `
-               --add Microsoft.Net.ComponentGroup.4.6.2.DeveloperTools `
-               --add Microsoft.VisualStudio.Component.SQL.CMDUtils `
-               --add Microsoft.Component.NetFX.Core.Runtime `
-               --add Component.GitHub.VisualStudio `
-               --add Microsoft.VisualStudio.Component.Git `
-               --add Microsoft.VisualStudio.Component.EntityFramework `
-               --passive | Out-Null
+#& $dest  `
+#               --productid Microsoft.VisualStudio.Product.Enterprise `
+#               --all `
+#               --passive | Out-Null
+
+
+#& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
+#               --channelid VisualStudio.15.Release `
+#               --productid Microsoft.VisualStudio.Product.Enterprise `
+#               --add Microsoft.VisualStudio.Component.Azure.ServiceFabric.Tools `
+#               --add Microsoft.Net.ComponentGroup.4.6.2.DeveloperTools `
+#               --add Microsoft.VisualStudio.Component.SQL.CMDUtils `
+#               --add Microsoft.Component.NetFX.Core.Runtime `
+#               --add Component.GitHub.VisualStudio `
+#               --add Microsoft.VisualStudio.Component.Git `
+#               --add Microsoft.VisualStudio.Component.EntityFramework `
+#               --passive | Out-Null
 
 
 #               /install `
@@ -151,18 +174,15 @@ uninstall-program "Windows Software Development Kit - Windows 10.0.14393.795"
 uninstall-program "Windows Software Development Kit - Windows 10.0.10586.212"
 uninstall-program "Windows SDK AddOn"
 Uninstall-Program "Microsoft Visual Studio 2010 Tools for Office Runtime (x64)"
-uninstall-program "Microsoft .NET Core 1.0.3 - SDK RC 3 (x64)"
+
+Uninstall-Program ".NET Core SDK 1.0.0 (x64) Installer (x64)" 
 uninstall-program "Microsoft .NET Framework 4.6.2 SDK" 
 uninstall-program "Microsoft .NET Framework 4.6.2 Targeting Pack"
 
-
-
-uninstall-program "Xamarin" 
-uninstall-program "Windows 10 for Mobile Image - 10.0.14393.0" 
 uninstall-program "Windows Mobile Connectivity Tools 10.0.10240.0 - Desktop x86" 
 
 uninstall-program "Gtk# for .Net 2.12.26" 
-uninstall-program "Java SE Development Kit 8 Update 92" 
+uninstall-program "Java SE Development Kit *" 
  
 uninstall-program "Microsoft Identity Extensions" 
 uninstall-program "Workflow Manager Client 1.0" 
@@ -171,27 +191,31 @@ uninstall-program "Universal CRT Extension SDK"
 uninstall-program "Universal CRT Headers Libraries and Sources"  
 
 
-
-
-
 #hard
+&"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe"  /uninstall
 Uninstall-Program "Microsoft Visual Studio 2017"
 uninstall-program "Android SDK Tools"
 
 uninstall-program "Cocos Creator"
 uninstall-program "Unity"
 uninstall-program "Microsoft Visual Studio 2017 Tools for Unity"
-uninstall-program "Epic Games Launcher"
+#uninstall-program "Epic Games Launcher"  !!!!!!!!!!!!!
 uninstall-program "Git version *"
 
+uninstall-program "IIS 10.0 Express"
+uninstall-program "Microsoft SQL Server 2016 LocalDB "
+uninstall-program "Microsoft SQL Server 2012 Native Client " 
+uninstall-program "Microsoft Web Deploy 3.6"  
 
-uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x64) - 14.10.24911"
-uninstall-program "Microsoft Visual C++ 2017 RC Redistributable (x86) - 14.10.24911"
 
-uninstall-program "Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.21005"
-uninstall-program "Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.21005"
+uninstall-program "Microsoft Visual C++ 2017 Redistributable (x64) - 14.10.25008"
+uninstall-program "Microsoft Visual C++ 2017 Redistributable (x86) - 14.10.25008"
+
+uninstall-program "Microsoft Visual C++ 2013 Redistributable (x64) - 12.0.30501"
+uninstall-program "Microsoft Visual C++ 2013 Redistributable (x86) - 12.0.30501"
 uninstall-program "Microsoft Visual C++ 2010  x64 Redistributable - 10.0.30319"
 
+&"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" /uninstall /quiet | Out-Null
        
 #uninstall-program "Microsoft SQL Server Data Tools - enu (14.0.60519.0)"                     
 #uninstall-program "Prerequisites for SSDT*"
@@ -223,11 +247,11 @@ uninstall-program "Microsoft Visual C++ 2010  x64 Redistributable - 10.0.30319"
 #uninstall-program "Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24215"
 
 
-$Acl = Get-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_client.xml"
-$Ar = New-Object  system.security.accesscontrol.filesystemaccessrule("BUILTIN\users","FullControl","Allow")
-$Acl.AddAccessRule($Ar)
-Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_client.xml" $Acl
-Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_extended.xml" $Acl 
+#$Acl = Get-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_client.xml"
+#$Ar = New-Object  system.security.accesscontrol.filesystemaccessrule("BUILTIN\users","FullControl","Allow")
+#$Acl.AddAccessRule($Ar)
+#Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_client.xml" $Acl
+#Set-Acl "C:\Program Files (x86)\Microsoft.NET\RedistList\AssemblyList_4_extended.xml" $Acl 
 
 
 
@@ -248,7 +272,7 @@ rd ($env:USERPROFILE + "\documents\Visual Studio 2017") -Recurse -Force
 
 rd "HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio" -Recurse -force
 rd "HKLM:\SOFTWARE\WOW6432Node\Microsoft\vscommon" -Recurse -force
-dir "HKLM:\SOFTWARE\WOW6432Node\Microsoft\visualstudio_*" -Recurse -force
+rd "HKLM:\SOFTWARE\WOW6432Node\Microsoft\visualstudio_*" -Recurse -force
 rd "HKLM:\SOFTWARE\Microsoft\VisualStudio" -recurse -force
 #rd "HKLM:\SOFTWARE\WOW6432Node\Microsoft\VSD3DProviders" -Recurse -force
 #rd "HKLM:\SOFTWARE\WOW6432Node\Microsoft\VsGraphics" -Recurse -force
