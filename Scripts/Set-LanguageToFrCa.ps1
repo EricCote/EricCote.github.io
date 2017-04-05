@@ -211,6 +211,9 @@ Windows Registry Editor Version 5.00
 "iTimePrefix"="0"
 "iTLZero"="1"
 
+[HKEY_CURRENT_USER\Control Panel\International\Geo]
+"Nation"="39"
+
 [HKEY_CURRENT_USER\Control Panel\International\User Profile]
 "Languages"=$langlist
 "ShowAutoCorrection"=dword:00000001
