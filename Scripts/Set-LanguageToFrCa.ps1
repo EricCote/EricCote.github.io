@@ -60,10 +60,8 @@ if ($LanguagePackSource -ne $null)
 }
 
 
-
 $lang="fr-CA";
 
-tzutil /s "Eastern Standard Time"
 
 function Add-OptionalFeature ($Name)
 {
@@ -234,12 +232,34 @@ Windows Registry Editor Version 5.00
 [HKEY_CURRENT_USER\Control Panel\International\User Profile\fr-CA]
 "CachedLanguageName"="@Winlangdb.dll,-1160"
 "0C0C:00001009"=dword:00000001
+"0C0C:00011009"=dword:00000002
 
 [-HKEY_CURRENT_USER\Control Panel\International\User Profile\fr-FR]
 
 [-HKEY_CURRENT_USER\Control Panel\International\User Profile\en-CA]
 
 [-HKEY_CURRENT_USER\Control Panel\International\User Profile System Backup]
+
+
+
+[-HKEY_CURRENT_USER\Keyboard Layout\Preload]
+
+[HKEY_CURRENT_USER\Keyboard Layout\Preload]
+"1"="00000409"
+"2"="00000c0c"
+"3"="d0010c0c"
+
+[-HKEY_CURRENT_USER\Keyboard Layout\Substitutes]
+
+[HKEY_CURRENT_USER\Keyboard Layout\Substitutes]
+"00000c0c"="00001009"
+"d0010c0c"="00011009"
+
+[HKEY_CURRENT_USER\Keyboard Layout\Toggle]
+"Language Hotkey"="3"
+"Hotkey"="3"
+"Layout Hotkey"="3"
+
 
 [HKEY_CURRENT_USER\Control Panel\Desktop]
 "PreferredUILanguages"=$langlist
