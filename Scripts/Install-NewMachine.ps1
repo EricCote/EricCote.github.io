@@ -150,9 +150,9 @@ function Disable-IEESC
 
     start-sleep 3
 
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Internet Explorer\Main" -Name "First Home Page" -Value "http://www.google.ca/"
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Internet Explorer\Main" -Name "Start Page" -Value "http://www.google.ca/"
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Internet Explorer\Main" -Name "Default_Page_URL" -Value "http://www.google.ca/"
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Internet Explorer\Main" -Name "First Home Page" -Value "https://www.google.ca/"
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Internet Explorer\Main" -Name "Start Page" -Value "https://www.google.ca/"
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Internet Explorer\Main" -Name "Default_Page_URL" -Value "https://www.google.ca/"
 }
 
 function Install-MediaFeatures
