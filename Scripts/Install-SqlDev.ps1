@@ -69,7 +69,7 @@ $dl=$Destination;
 
 
 $sourceSqlDev = "https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLServer2016-x64-ENU-Dev.iso";
-$SqlDev= ($dl + "SQLServer2016-x64-ENU-Dev.iso")
+$SqlDev= ($dl + "SQLServer2016SP1-FullSlipstream-x64-ENU-DEV.iso")
 
 if (-Not (Test-Path $SqlDev)) {
    Download-File $sourceSqlDev $SqlDev
@@ -130,20 +130,18 @@ if (-Not (Test-Path $ssdt)) {
 if ($Uninstall)
 {
 
-$SqlDev= ($dl + "SQLServer2016-x64-ENU-Dev.iso")
-$drv=((Mount-DiskImage $SqlDev -PassThru  | Get-Volume).DriveLetter + ':\')
 
-& ($drv + 'setup.exe') /qs `
+& "$env:programFiles\Microsoft SQL Server\130\Setup Bootstrap\SQLServer2016\setup.exe" /qs `
                        /Action=uninstall `
                        /IAcceptSqlServerLicenseTerms `
                        /Features=SQL,AS,RS,IS,DQC,MDS,SQL_SHARED_MR,Tools `
                        /InstanceName=MSSQLSERVER | Out-Null
 
-$ssms= ($dl + "SSMS-setup-enu.exe")
-& ($ssms) /uninstall /passive | Out-Null
+$ssms= "$env:Temp\SSMS-setup-enu.exe"
+& $ssms /uninstall /passive | Out-Null
 
-$ssdt= ($dl + "SSDTSetup.exe")
-& ($ssdt) /uninstall /passive | Out-Null
+$ssdt= "$env:Temp\SSDTSetup.exe"
+& $ssdt /uninstall /passive | Out-Null
 
 
 
@@ -163,6 +161,8 @@ uninstall-program "Microsoft Visual Studio 2015 Shell (Integrated)"
 uninstall-program "Microsoft Visual Studio 2015 Shell (Isolated)" 
 
 uninstall-program "*help viewer 2.2*"
+uninstall-program "*help viewer 1.1*"
+
 
 
 uninstall-program "*sql server*" 
@@ -170,6 +170,10 @@ uninstall-program "*sql server*"  #64 bit
 uninstall-program "Microsoft Visual C++*Redistributable*"
 uninstall-program "Microsoft Visual C++*Redistributable*" 
 
+
+rd "C:\Program Files\Microsoft SQL Server" -recurse -force
+rd "C:\Program Files (x86)\Microsoft SQL Server" -recurse -force
+rd "C:\Program Files (x86)\Microsoft Visual Studio 14.0" -recurse -force
 
  }
 
