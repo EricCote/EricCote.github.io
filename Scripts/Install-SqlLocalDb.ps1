@@ -1,9 +1,4 @@
-﻿[CmdletBinding()]
-Param
-    ( 
-    [string]$Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
-    [switch] $Uninstall = $false 
-    )
+﻿
 
 function Download-File
 {
@@ -19,42 +14,26 @@ function Download-File
 }
 
 
-#$sourceSql = "https://download.microsoft.com/download/B/F/2/BF2EDBB8-004D-47F3-AA2B-FEA897591599/SQLServer2016-SSEI-Expr.exe"
-#$LocalSqlDownloader= ($dl + "SQLServer2016-SSEI-Expr.exe")
-
-#& ($LocalSqlDownloader) /ConfigurationFile=C:\code\Configuration.ini  /IAcceptSqlServerLicenseTerms /MediaPath=C:\SqlServer2016Setup  /ENU | Out-Null
-
-#$configurationIni= @"
-#; Microsoft SQL Server Configuration file  
-#[OPTIONS]  
-#ACTION="Install"  
-#FEATURES=SQL
-#INSTANCENAME=SqlExpress  
-#"@
-
-
-#-------------------------------
-
-$dl=$Destination
-                     
 $sourceSqlLocalDb="https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SqlLocalDB.msi";
-$sourceSqlLocalDb="https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SqlLocalDB.msi";
-$SqlLocalDb= ($dl + "SqlLocalDB.msi")
+$SqlLocalDb=  "$env:temp\SqlLocalDB.msi"
 
-
-$sourceOdbc = "https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/13.1.811.168/amd64/msodbcsql.msi"
-$odbc = ($dl + "msodbcsql.msi")
+$sourceOdbc = "https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi"
+$odbc = "$env:temp\msodbcsql.msi"
 
 $sourceCmdLineUtil = "https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/Command%20Line%20Utilities%20MSI%20files/amd64/MsSqlCmdLnUtils.msi"
-$CmdLineUtil = ($dl + "MsSqlCmdLnUtils.msi")
+$CmdLineUtil = "$env:temp\MsSqlCmdLnUtils.msi"
 
-Download-File $sourceOdbc $odbc
 Download-File $sourceSqlLocalDb $SqlLocalDb
+Download-File $sourceOdbc $odbc
 Download-File $sourceCmdLineUtil $CmdLineUtil
 
-Start-Process  "msiexec"  -argumentlist "/passive /i ""$SqlLocalDb"" IACCEPTSQLLOCALDBLICENSETERMS=YES" -Wait 
-Start-Process  "msiexec"  -argumentlist "/passive /i ""$odbc"" IACCEPTMSODBCSQLLICENSETERMS=YES" -Wait 
-Start-Process  "msiexec"  -argumentlist "/passive /i ""$CmdLineUtil"" IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES" -Wait 
+#Start-Process  "msiexec"  -argumentlist "/quiet /i ""$SqlLocalDb"" IACCEPTSQLLOCALDBLICENSETERMS=YES" -Wait 
+#Start-Process  "msiexec"  -argumentlist "/quiet /i ""$odbc"" IACCEPTMSODBCSQLLICENSETERMS=YES" -Wait 
+#Start-Process  "msiexec"  -argumentlist "/quiet /i ""$CmdLineUtil"" IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES" -Wait 
+
+& msiexec /i "$SqlLocalDb" IACCEPTSQLLOCALDBLICENSETERMS=YES /quiet | out-default
+& msiexec /i "$odbc" IACCEPTMSODBCSQLLICENSETERMS=YES /quiet | out-default
+& msiexec /i "$CmdLineUtil" IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /quiet | out-default
 
 
 del $SqlLocalDb
@@ -118,8 +97,5 @@ function Uninstall-Program
 #$SourceOdbc13dot0 = "https://download.microsoft.com/download/1/E/7/1E7B1181-3974-4B29-9A47-CC857B271AA2/English/X64/msodbcsql.msi"
 #$sourceCmdLineUtil13dot0 = "https://download.microsoft.com/download/C/8/E/C8ECE442-C29C-4EE4-BD73-872C03D9EB84/ENG_1033/x64/SqlCmdLnUtils.msi"
 
-#"https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPR_x64_ENU.exe" 
-#"https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPRADV_x64_ENU.exe"
-#"https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SqlLocalDB.msi"
 
 
