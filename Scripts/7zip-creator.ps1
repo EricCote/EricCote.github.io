@@ -3,7 +3,7 @@
 [CmdletBinding()]
 Param
     (
-    [string] $ScriptPath = "C:\code\EricCote.github.io\scripts", 
+    [string] $ScriptPath = "C:\code2\EricCote.github.io\scripts", 
     [string] $Destination = $(Join-Path  $env:USERPROFILE "downloads\"),
     [switch] $Uninstall = $false 
     )
